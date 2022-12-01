@@ -1,0 +1,19 @@
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <h1> Login </h1>
+    </head>
+    <body>
+        {% if form.errors %}
+            <p>username or password didn't match</p>
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="submit" value="Login">
+            <input type="submit" value="Cancel" onclick="window.location.href='{% url 'home:all' %}';return false;">
+        </form>
+
+    </body>
+</html>

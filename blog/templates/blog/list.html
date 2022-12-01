@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+        <h1>Blog list</h1>
+        {% if blogs %}
+            {% for blog in blogs %}
+            <div>
+                <li>
+                    <a href="{% url 'blog:blog_detail' blog.id %}">{{blog}}</a>
+                    {% if user.is_authenticated %}
+                    <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
+                    <a href="#" onclick=
+                        "favPost('{% url 'blog:bookmark_delete' blog.id %}', {{ blog.id }} );return false;"
+                        {% if blog.id not in fav_blogs %} style="display: none;" {% endif %}
+                        id="favorite_star_{{blog.id}}">
+                        <span class="fa-stack" style="vertical-align: middle;">
+                        <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
+                        <i class="fa fa-star-o fa-stack-1x"></i>
+                        </span>
+                    </a>
+                    <!-- the second href -->
+                    <a href="#" onclick=
+                        "favPost('{% url 'blog:bookmark_add' blog.id %}', {{ blog.id }} );return false;"
+                        {% if blog.id in fav_blogs %} style="display: none;" {% endif %}
+                        id="unfavorite_star_{{blog.id}}">
+                        <span class="fa-stack" style="vertical-align: middle;">
+                        <i class="fa fa-star fa-stack-1x" style="display: none; color: orange;"></i>
+                        <i class="fa fa-star-o fa-stack-1x"></i>
+                        </span>
+                    </a>
+                    {% endif %}
+                </li>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>There are no blogs.</p>
+        {% endif %}
+        <a href="{% url 'home:all' %}">home</a>
+        <script>
+            function favPost(url, thing_id) {
+                console.log('Requesting JSON');
+                $.post(url, {},  function(rowz){
+                    console.log(url, 'finished');
+                    $("#unfavorite_star_"+thing_id).toggle();
+                    $("#favorite_star_"+thing_id).toggle();
+                }).fail(function(xhr) {
+                    alert('Url failed with '+xhr.status+' '+url);
+                });
+            }
+            </script>
+        
+{% endblock %}

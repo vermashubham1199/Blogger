@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+        <h1>Blogs list</h1>
+        {% if blogs %}
+            {% for blog in blogs %}
+            <div>
+                <a href="{% url 'blog:owner_detail' blog.id %}">{{blog}}</a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>There are no blogs.</p>
+        {% endif %}
+        <a href="{% url 'user_profile:profile_page' %}">Profile</a>
+{% endblock %}

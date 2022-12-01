@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+        <h1>{{ blog.name }}</h1><a href="{% url 'blog:blog_update' blog.id %}">edit</a> <a href="{% url 'blog:add_para' blog.id %}">Add Para</a> 
+            <a href="{% url 'blog:blog_delete' blog.id %}">Blog Delete</a>   <a href="{% url 'blog:owner_list' %}">List</a>
+        {% for pic in pics %}
+            <div style = "text-align: center; background-color: rgba(211, 211, 211, 0.582); color: rgb(0, 183, 255); padding-top: 50px;
+            padding-right: 80px;
+            padding-bottom: 50px;
+            padding-left: 80px;">
+            <p>{{ pic.p_title }}</p>
+            <p>{{ pic.text }}</p>
+            </div>
+            {% if pic.text %}
+                <img style=" max-width:50%; display:block; margin-left: auto; margin-right: auto;" src = "{% url 'blog:stream_pic' pic.id %}"><a href="{% url 'blog:picture_update' pic.id blog.id %}">edit</a>
+                {% if pic.content_type %}<a href="{% url 'blog:picture_delete' pic.id %}">Picture Delete</a> {% endif %}<a href="{% url 'blog:para_delete' pic.id %}">Para Delete</a>
+            {% endif %}
+        {% endfor %}
+{% endblock %}

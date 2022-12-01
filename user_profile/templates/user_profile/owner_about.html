@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+        <img style="max-width: 40mm; max-height: 40mm; display:block; margin-left: auto; margin-right: auto; float: right;" src = "{% url 'user_profile:profile_pic_stream' %}"> 
+        <h1>{{ owner.username }}</h1>
+        <a href="{% url 'home:all' %}">home</a>
+        {% if owner.id != request.user.id %}
+                <a href="{% url 'user_profile:chat' owner.id %}">Chat</a>
+        {% endif %}
+        {% if request.user != owner %}
+                <li style="list-style:none;">
+                        {% if user.is_authenticated %}
+                        <span>Follow</span>
+                                <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
+                                <a href="#" onclick=
+                                "favPost('{% url 'user_profile:follow_delete' owner.id %}', {{ owner.id }} );return false;"
+                                {% if request.user not in follow_list %} style="display: none;" {% endif %}
+                                id="favorite_star_{{owner.id}}">
+                                <span class="fa-stack" style="vertical-align: middle;">
+                                <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
+                                <i class="fa fa-star-o fa-stack-1x"></i>
+                                </span>
+                                </a>
+                                <!-- the second href -->
+                                <a href="#" onclick=
+                                "favPost('{% url 'user_profile:follow_add' owner.id %}', {{ owner.id }} );return false;"
+                                {% if request.user in follow_list %} style="display: none;" {% endif %}
+                                id="unfavorite_star_{{owner.id}}">
+                                <span class="fa-stack" style="vertical-align: middle;">
+                                <i class="fa fa-star fa-stack-1x" style="display: none; color: orange;"></i>
+                                <i class="fa fa-star-o fa-stack-1x"></i>
+                                </span>
+                                </a>
+                        {% endif %}
+                </li>
+        {% endif %}
+            <script>
+                function favPost(url, thing_id) {
+                    console.log('Requesting JSON');
+                    $.post(url, {},  function(rowz){
+                        console.log(url, 'finished');
+                        $("#unfavorite_star_"+thing_id).toggle();
+                        $("#favorite_star_"+thing_id).toggle();
+                    }).fail(function(xhr) {
+                        alert('Url failed with '+xhr.status+' '+url);
+                    });
+                }
+                </script>
+{% endblock %}

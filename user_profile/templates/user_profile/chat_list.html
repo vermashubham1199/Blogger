@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+        {% for row in ordered_row %}
+            {% if request.user == row.sender %}
+            <a href="{% url 'user_profile:chat' row.receiver.id %}">{{row.receiver.username}}</a><br>
+            {% elif request.user == row.receiver %}
+            <a href="{% url 'user_profile:chat' row.sender.id %}">{{row.sender.username}}</a><br>
+            {% endif %}
+        {% endfor %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+{% load crispy_forms_tags %}
+    <h1> Chat </h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ fm|crispy }}
+        <input type="submit" value="Send">
+    </form>
+        {% for row in ordered_row %}
+            {% if request.user == row.chat.sender %}
+                <div style="text-align: right;">
+                    <span style="color: green; font-size: large;">{{row.text}}</span><span style=" font-size: small;">{{row.created_at|timesince}}</span><br>
+                </div>
+            {% elif request.user == row.chat.receiver %}
+                <div style="text-align: left;">
+                    <span style="color: blue; font-size: large;">{{row.text}}</span><span style=" font-size: small;">{{row.created_at|timesince}}</span><br>
+                </div>
+            {% endif %}
+        {% endfor %}
+       
+{% endblock %}

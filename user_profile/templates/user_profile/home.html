@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+        <img style="max-width: 40mm; max-height: 40mm; display:block; margin-left: auto; margin-right: auto; float: right;" src = "{% url 'user_profile:profile_pic_stream' %}">
+        {% if owner == request.user %}
+                <a href="{% url 'user_profile:delete_profile_pic' %}">Delete</a>
+        {% endif %}
+        <h1>{{ owner.username }}</h1>
+        <ul >
+                {% for category in categories %}
+                        <li style="list-style-type: none;"> 
+                                {{category.name}}
+                                {% if user.is_authenticated %}
+                                        <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
+                                        <a href="#" onclick=
+                                                "favPost('{% url 'user_profile:delete_like_cat' category.id %}', {{category.id }} );return false;"
+                                                {% if category.id not in fav_category %} style="display: none;" {% endif %}
+                                                id="favorite_star_{{category.id}}">
+                                                <span class="fa-stack" style="vertical-align: middle;">
+                                                <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
+                                                <i class="fa fa-star-o fa-stack-1x"></i>
+                                                </span>
+                                        </a>
+                                        <!-- the second href -->
+                                        <a href="#" onclick=
+                                                "favPost('{% url 'user_profile:add_like_cat' category.id %}', {{ category.id }} );return false;"
+                                                {% if category.id in fav_category %} style="display: none;" {% endif %}
+                                                id="unfavorite_star_{{category.id}}">
+                                                <span class="fa-stack" style="vertical-align: middle;">
+                                                <i class="fa fa-star fa-stack-1x" style="display: none; color: orange;"></i>
+                                                <i class="fa fa-star-o fa-stack-1x"></i>
+                                                </span>
+                                        </a>
+                                {% endif %}
+                        </li>
+                {% endfor %}
+        </ul>
+        <a href="{% url 'blog:owner_list' %}">list</a>
+        <a href="{% url 'blog:blog_create' %}">create a blog</a>
+        <a href="{% url 'user_profile:profile_pic' %}">create a pic</a>
+        <a href="{% url 'home:all' %}">home</a>
+        <a href="{% url 'user_profile:list_chat' %}">chats</a>
+        <a href="{% url 'user_profile:user_update' %}">update profile</a>
+        <a href="{% url 'user_profile:password_update' %}">password update</a>
+
+        <script>
+                function favPost(url, thing_id) {
+                    console.log('Requesting JSON');
+                    console.log(url, thing_id);
+                    $.post(url, {},  function(rowz){
+                        console.log(url, 'finished');
+                        $("#unfavorite_star_"+thing_id).toggle();
+                        $("#favorite_star_"+thing_id).toggle();
+                    }).fail(function(xhr) {
+                        alert('Url failed with '+xhr.status+' '+url);
+                    });
+                }
+                </script>
+{% endblock %}

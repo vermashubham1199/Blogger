@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+        <h1>{{ blog.name }}</h1>
+        {% for pic in pics %}
+        <p>{{ pic.p_title }}</p>
+        <p>{{ pic.text }}</p>
+            {% if pic.content_type %}
+                <img style=" max-width:50%; display:block; margin-left: auto; margin-right: auto;" src = "{% url 'blog:stream_pic' pic.id %}">
+            {% endif %}
+        {% endfor %}
+        <!-- like -->
+        <a href="#" onclick=
+                        "favPost('{% url 'blog:like_delete' blog.id %}', {{ blog.id }}, 'lik_del' );return false;"
+                        {% if blog.id not in bl or l == False %} style="display: none;" {% endif %}
+                        id="like_{{blog.id}}">
+                        <span class="fa-stack" style="vertical-align: middle;">
+                        <i class="fa fa-star fa-stack-1x" style="color: blue;"></i>
+                        <i class="fa fa-star-o fa-stack-1x"></i>
+                        </span>like
+                    </a>
+                    <!-- the second href -->
+                    <a href="#" onclick=
+                        "favPost('{% url 'blog:like_add' blog.id %}', {{ blog.id }}, 'lik' );return false;"
+                        {% if blog.id in bl and l == True %} style="display: none;" {% endif %}
+                        id="del_{{blog.id}}">
+                        <span class="fa-stack" style="vertical-align: middle;">
+                        <i class="fa fa-star fa-stack-1x" style="display: none; color: blue;"></i>
+                        <i class="fa fa-star-o fa-stack-1x"></i>
+                        </span>like
+            </a>
+            <!-- dislike -->
+            <a href="#" onclick=
+                        "favPost('{% url 'blog:like_delete' blog.id %}', {{ blog.id }}, 'lik_del');return false;"
+                        {% if blog.id not in bl or l == True %} style="display: none;" {% endif %}
+                        id="dislike_{{blog.id}}">
+                        <span class="fa-stack" style="vertical-align: middle;">
+                        <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
+                        <i class="fa fa-star-o fa-stack-1x"></i>
+                        </span>dislike
+                    </a>
+                    <!-- the second href -->
+                    <a href="#" onclick=
+                        "favPost('{% url 'blog:dislike_add' blog.id %}', {{ blog.id }}, 'dis' );return false;"
+                        {% if blog.id in bl and l == False %} style="display: none;" {% endif %}
+                        id="dis_del_{{blog.id}}">
+                        <span class="fa-stack" style="vertical-align: middle;">
+                        <i class="fa fa-star fa-stack-1x" style=" display: none; color: orange;"></i>
+                        <i class="fa fa-star-o fa-stack-1x"></i>
+                        </span>dislike
+            </a>
+        <form method="POST" action="{% url 'blog:add_comment' blog.id %}" onsubmit="comment_change(event, this)" id="newform">
+            {% csrf_token %}
+            {{ fm|crispy }}
+            <input type="submit" value="Save">
+        </form>
+        <ul id="comment_list" style="list-style-type: none;">
+            {% for comment in commnets %}
+                <li>
+                    <span style="color: red;">{{comment.owner}}</span> {{comment.text}} <span style="color: blue;">{{comment.created_at|timesince}}</span>
+                    {% if request.user == blog.owner %} 
+                        <a href="{% url 'blog:comment_delete' comment.id %}">delete</a> 
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+            <a href="{% url 'blog:blog_list' %}">list</a>
+            <a href="{% url 'user_profile:owner_about' blog.owner.id %}">{{blog.owner}}</a>
+            <span hidden id="uname">{{ request.user }}</span>    
+            <script>
+                function favPost(url, thing_id, tog) {
+                    console.log('Requesting JSON');
+                    $.post(url, {},  function(rowz){
+                        console.log(url, 'finished');
+                        if (tog === 'lik') {
+                            $("#like_"+thing_id).toggle();
+                            $("#del_"+thing_id).toggle();
+                            var x = document.getElementById("dislike_"+thing_id)
+                            console.log(x)
+                            if (window.getComputedStyle(x).display !== "none") {
+                                $("#dislike_"+thing_id).toggle();
+                                $("#dis_del_"+thing_id).toggle();
+                            }
+                        }
+                        else if (tog === 'dis') {
+                            $("#dislike_"+thing_id).toggle();
+                            $("#dis_del_"+thing_id).toggle();
+                            var x = document.getElementById("like_"+thing_id)
+                            console.log(x)
+                            if (window.getComputedStyle(x).display !== "none") {
+                                $("#like_"+thing_id).toggle();
+                                $("#del_"+thing_id).toggle();
+                            }
+                        }
+                        else if  (tog === 'lik_del') {
+                            var y = document.getElementById("like_"+thing_id)
+                            console.log('lik_del working')
+                            if (window.getComputedStyle(y).display !== "none") {
+                                $("#like_"+thing_id).toggle();
+                                $("#del_"+thing_id).toggle();
+                            }
+                            var x = document.getElementById("dislike_"+thing_id)
+                            console.log('dislik del working')
+                            if (window.getComputedStyle(x).display !== "none") {
+                                $("#dislike_"+thing_id).toggle();
+                                $("#dis_del_"+thing_id).toggle();
+                            }}
+                        
+                    }).fail(function(xhr) {
+                        alert('Url failed with '+xhr.status+' '+url);
+                    });
+                }
+                function comment_change(e, form) {
+                    e.preventDefault();
+            
+                    const output = document.getElementById('output');
+                    const formData = new FormData(form);
+                
+                    fetch(form.action, {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(html => {
+                        output.innerHTML = html.Response
+                    });
+                    var tex = document.getElementById('id_text').value;
+                    var uname = document.getElementById('uname').innerHTML;
+                    document.getElementById('newform').reset();
+                    console.log(tex)
+                    var ul = document.getElementById("comment_list");
+                    var li = document.createElement("li");
+                    var spa = document.createElement("nam");
+                    var spa_time = document.createElement("time");
+                    spa.appendChild(document.createTextNode(uname));
+                    spa_time.appendChild(document.createTextNode('0 minutes'));
+                    spa.setAttribute('style', 'color: red;')
+                    spa_time.setAttribute('style', 'color: blue;')
+                    li.appendChild(spa);
+                    li.appendChild(document.createTextNode(' '+ tex +' '));
+                    li.appendChild(spa_time);
+                    ul.appendChild(li);
+                  }
+                </script>  
+{% endblock %}

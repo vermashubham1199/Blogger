@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<p>
+    <form method="post" action="">
+        {% csrf_token %}
+        <h1>Delete Ads</h1>
+        <p> Are you sure you want to delete this ad? {picture} </p>
+        <input type="submit" value="Submit">
+        <input type="submit" value="Cancel" onclick="window.location.href='{% url 'user_profile:profile_page' %}';return false;">
+    </form>
+</p>
+{% endblock %}
