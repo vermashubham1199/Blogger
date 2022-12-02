@@ -113,6 +113,7 @@ class DeleteParaView(LoginRequiredMixin, View):
 
 
 
+
 #Owner
 #<--------------------------------------------------------------------------------------------------------------->
 def stream_file(request, pk):
