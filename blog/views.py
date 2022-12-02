@@ -145,7 +145,7 @@ class OwnerDetailView(LoginRequiredMixin, View):
 
 #Picture
 #<--------------------------------------------------------------------------------------------------------------->
-class BlogParaCreateView(View):
+class BlogParaCreateView(LoginRequiredMixin,View):
     sucess_url = reverse_lazy('blog:blog_picture')
     home = reverse_lazy('home:all')
 
@@ -156,7 +156,7 @@ class BlogParaCreateView(View):
     def post(self, request):
         if 'pk' in request.session:
             pk = request.session['pk']
-            blog = get_object_or_404(Blog,pk=pk)
+            blog = get_object_or_404(Blog,pk=pk, owner=request.user.id)
         else:
             return redirect(self.home)
         fm = PictureForm(request.POST, request.FILES or None, blog_id=blog.id)
