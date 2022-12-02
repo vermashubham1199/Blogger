@@ -16,6 +16,7 @@ from .models import (
 
 # Create your views here.
 
+#Blog
 class BlogListView(View):
 
     def get(self, request):
@@ -56,28 +57,6 @@ class BlogCreateView(LoginRequiredMixin, View):
             return redirect(self.sucess_url)
         return render(request, 'blog/blog_create.html', {'fm':fm})
 
-class BlogParaCreateView(View):
-    sucess_url = reverse_lazy('blog:blog_picture')
-    home = reverse_lazy('home:all')
-
-    def get(self, request):
-        fm = PictureForm()
-        return render(request, 'blog/blog_picture.html', {'fm':fm})
-    
-    def post(self, request):
-        if 'pk' in request.session:
-            pk = request.session['pk']
-            blog = get_object_or_404(Blog,pk=pk)
-        else:
-            return redirect(self.home)
-        fm = PictureForm(request.POST, request.FILES or None, blog_id=blog.id)
-        if fm.is_valid():
-            row = fm.save(commit=False)
-            row.blog = blog
-            row.save()
-            return redirect(self.sucess_url)
-        return render(request, 'blog/blog_picture.html', {'fm':fm})
-
 
 class BlogDetailView(View):
 
@@ -113,7 +92,23 @@ class BlogUpdateView(LoginRequiredMixin, View):
             return redirect(reverse('blog:owner_detail', args=[blog.id]))
         return render(request, 'blog/blog_create.html', {'fm':fm, 'blog':blog.id})
 
+class DeleteBlogView(OwnerDeleteView):
+    model = Blog
 
+class DeleteParaView(LoginRequiredMixin, View):
+    sucess_url = reverse_lazy('blog:owner_list')
+
+    def get(self, request, pk):
+        return render(request, 'blog/delete.html', {})
+    
+    def post(self, request, pk):
+        pic = get_object_or_404(Para, pk=pk) 
+        if pic.blog.owner == self.request.user:
+            pic.delete()
+            return redirect(reverse('blog:owner_detail', args=[pic.blog.id]))
+        raise forms.ValidationError('you are not the owner')
+
+#Owner
 def stream_file(request, pk):
     pic = get_object_or_404(Para, id=pk)
     response = HttpResponse()
@@ -138,6 +133,28 @@ class OwnerDetailView(LoginRequiredMixin, View):
         ctx = {'pics':pics, 'blog':blog}
         return render(request, 'blog/owner_detail.html', ctx)
 
+#Picture
+class BlogParaCreateView(View):
+    sucess_url = reverse_lazy('blog:blog_picture')
+    home = reverse_lazy('home:all')
+
+    def get(self, request):
+        fm = PictureForm()
+        return render(request, 'blog/blog_picture.html', {'fm':fm})
+    
+    def post(self, request):
+        if 'pk' in request.session:
+            pk = request.session['pk']
+            blog = get_object_or_404(Blog,pk=pk)
+        else:
+            return redirect(self.home)
+        fm = PictureForm(request.POST, request.FILES or None, blog_id=blog.id)
+        if fm.is_valid():
+            row = fm.save(commit=False)
+            row.blog = blog
+            row.save()
+            return redirect(self.sucess_url)
+        return render(request, 'blog/blog_picture.html', {'fm':fm})
 
 class PictureUpdateView(LoginRequiredMixin, View):
     sucess_url = reverse_lazy('blog:owner_list')
@@ -181,22 +198,6 @@ class ParaAddView(LoginRequiredMixin, View):
 
 
 
-class DeleteBlogView(OwnerDeleteView):
-    model = Blog
-
-class DeleteParaView(LoginRequiredMixin, View):
-    sucess_url = reverse_lazy('blog:owner_list')
-
-    def get(self, request, pk):
-        return render(request, 'blog/delete.html', {})
-    
-    def post(self, request, pk):
-        pic = get_object_or_404(Para, pk=pk) 
-        if pic.blog.owner == self.request.user:
-            pic.delete()
-            return redirect(reverse('blog:owner_detail', args=[pic.blog.id]))
-        raise forms.ValidationError('you are not the owner')
-
 class DeletePictureView(LoginRequiredMixin, View):
     sucess_url = reverse_lazy('blog:owner_list')
 
@@ -212,6 +213,8 @@ class DeletePictureView(LoginRequiredMixin, View):
             return redirect(reverse('blog:owner_detail', args=[pic.blog.id]))
         raise forms.ValidationError('you are not the owner')
 
+
+#Comment 
 class CommentView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
@@ -231,7 +234,7 @@ class CommentDeleteView(OwnerDeleteView):
         blog = self.object.blog
         return reverse('blog:blog_detail', args=[blog.id])
 
-
+#Bookmark
 @method_decorator(csrf_exempt, name='dispatch')
 class AddBookmark(LoginRequiredMixin, View):
 
@@ -256,7 +259,7 @@ class DeleteBookmark(LoginRequiredMixin, View):
             pass
         return HttpResponse()
 
-
+#Like
 @method_decorator(csrf_exempt, name='dispatch')
 class AddLike(LoginRequiredMixin, View):
 
