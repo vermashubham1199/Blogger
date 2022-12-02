@@ -17,6 +17,7 @@ from .models import (
 # Create your views here.
 
 #Blog
+#<--------------------------------------------------------------------------------------------------------------->
 class BlogListView(View):
 
     def get(self, request):
@@ -107,8 +108,13 @@ class DeleteParaView(LoginRequiredMixin, View):
             pic.delete()
             return redirect(reverse('blog:owner_detail', args=[pic.blog.id]))
         raise forms.ValidationError('you are not the owner')
+#<--------------------------------------------------------------------------------------------------------------->
+
+
+
 
 #Owner
+#<--------------------------------------------------------------------------------------------------------------->
 def stream_file(request, pk):
     pic = get_object_or_404(Para, id=pk)
     response = HttpResponse()
@@ -132,8 +138,13 @@ class OwnerDetailView(LoginRequiredMixin, View):
         pics = blog.picture_blog.all()
         ctx = {'pics':pics, 'blog':blog}
         return render(request, 'blog/owner_detail.html', ctx)
+#<--------------------------------------------------------------------------------------------------------------->
+
+
+
 
 #Picture
+#<--------------------------------------------------------------------------------------------------------------->
 class BlogParaCreateView(View):
     sucess_url = reverse_lazy('blog:blog_picture')
     home = reverse_lazy('home:all')
@@ -212,9 +223,13 @@ class DeletePictureView(LoginRequiredMixin, View):
             pic.save()
             return redirect(reverse('blog:owner_detail', args=[pic.blog.id]))
         raise forms.ValidationError('you are not the owner')
+#<--------------------------------------------------------------------------------------------------------------->
+
+
 
 
 #Comment 
+#<--------------------------------------------------------------------------------------------------------------->
 class CommentView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
@@ -233,8 +248,15 @@ class CommentDeleteView(OwnerDeleteView):
     def get_success_url(self):
         blog = self.object.blog
         return reverse('blog:blog_detail', args=[blog.id])
+#<--------------------------------------------------------------------------------------------------------------->
+
+
+
+
 
 #Bookmark
+#<--------------------------------------------------------------------------------------------------------------->
+
 @method_decorator(csrf_exempt, name='dispatch')
 class AddBookmark(LoginRequiredMixin, View):
 
@@ -258,8 +280,13 @@ class DeleteBookmark(LoginRequiredMixin, View):
         except Bookmark.DoesNotExist as e:
             pass
         return HttpResponse()
+#<--------------------------------------------------------------------------------------------------------------->
+
+
+
 
 #Like
+#<--------------------------------------------------------------------------------------------------------------->
 @method_decorator(csrf_exempt, name='dispatch')
 class AddLike(LoginRequiredMixin, View):
 
