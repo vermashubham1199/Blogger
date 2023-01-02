@@ -1,7 +1,7 @@
 from django.urls import path, reverse_lazy
 from django.views.generic import TemplateView
 from .views import (
-    BlogListView, BlogCreateView, BlogParaCreateView, BlogDetailView, BlogUpdateView, stream_file, OwnerListView, PictureUpdateView, OwnerDetailView, ParaAddView, 
+    BlogListView, BlogCreateView, BlogParaCreateView, BlogDetailView, BlogUpdateView, stream_file, OwnerListView, ParaUpdateView, OwnerDetailView, ParaAddView, 
     DeleteBlogView, DeleteParaView, DeletePictureView, CommentView, CommentDeleteView, AddBookmark, DeleteBookmark, AddDislike, AddLike, DeleteLike
 )
 
@@ -15,7 +15,7 @@ urlpatterns = [
     path('update/<int:pk>', BlogUpdateView.as_view(), name='blog_update'),
     path('pic/<int:pk>', stream_file, name='stream_pic'),
     path('owner_list/', OwnerListView.as_view(), name='owner_list'),
-    path('pic_update/<int:pid>/<int:bid>', PictureUpdateView.as_view(), name='picture_update'),
+    path('pic_update/<int:pid>/<int:bid>', ParaUpdateView.as_view(), name='picture_update'),
     path('owner_detail/<int:pk>', OwnerDetailView.as_view(), name='owner_detail'),
     path('add_para/<int:bid>', ParaAddView.as_view(), name='add_para'),
     path('blog_delete/<int:pk>', DeleteBlogView.as_view(template_name = 'blog/delete.html', success_url=reverse_lazy('blog:owner_list')), name='blog_delete'),

@@ -1,6 +1,7 @@
 from .tests import pint
 from django.shortcuts import HttpResponse
 from .models import History
+from django.utils.deprecation import MiddlewareMixin
 
 class MyMiddleware:
 

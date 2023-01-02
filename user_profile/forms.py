@@ -21,7 +21,6 @@ class ProfilePicForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        pint(type(cleaned_data))
         pic = cleaned_data.get('picture')
         if pic is None:
             return

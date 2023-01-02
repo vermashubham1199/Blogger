@@ -6,6 +6,6 @@
             {% csrf_token %}
             {{ fm|crispy }}
             <input type="submit" value="Save">
-            <input type="submit" value="Done" onclick="window.location.href='{% url 'user_profile:profile_page' %}';return false;">
+            <input type="submit" value="Cancel" onclick="window.location.href='{% url 'blog:owner_detail' blog %}';return false;">
         </form>
 {% endblock %} 
