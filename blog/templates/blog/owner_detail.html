@@ -14,5 +14,130 @@
                 <img style=" max-width:50%; display:block; margin-left: auto; margin-right: auto;" src = "{% url 'blog:stream_pic' pic.id %}"><a href="{% url 'blog:picture_update' pic.id blog.id %}">edit</a>
                 {% if pic.content_type %}<a href="{% url 'blog:picture_delete' pic.id %}">Picture Delete</a> {% endif %}<a href="{% url 'blog:para_delete' pic.id %}">Para Delete</a>
             {% endif %}
-        {% endfor %}
+        {% endfor %}<br>
+        <button onclick="new_photo_form('{{ csrf_token }}', '{% url 'blog:blog_cover_photo' blog.id %}')">new photo</button>
+        <button onclick="exisiting_photo_form('{{ pic_id_json }}', '{{ csrf_token }}', '{% url 'blog:blog_cover_photo' blog.id %}')">exisiting photo</button>
+        <a href="{% url 'blog:delete_cover_photo' blog.id %}">
+            <button>delete cover photo</button>
+        </a>
+        <div id="container">
+            <style>
+                label.selected img {
+              border-color: blue;
+            }
+            </style>
+        </div>
+        <script>
+            function new_photo_form(csrf_value, link) {
+                // create form element
+                var form = document.createElement("form");
+                form.method = "POST"
+                form.action = link;
+                form.enctype = "multipart/form-data";
+            
+                // create input element and add to form
+                var input = document.createElement("input");
+                input.type = "file";
+                input.name = "image";
+                form.appendChild(input);
+
+                // creating an input field for crsf token
+                var csrf = document.createElement("input");
+                csrf.type = "hidden";
+                csrf.name = "csrfmiddlewaretoken";
+                csrf.value = csrf_value;
+                form.appendChild(csrf);
+            
+                // create submit button and add to form
+                var submit = document.createElement("input");
+                submit.type = "submit";
+                submit.value = "Submit";
+                form.appendChild(submit);
+            
+                // get container div
+                var container = document.getElementById("container");
+            
+                // append form to container
+                container.innerHTML = ""
+                container.appendChild(form);
+            }
+            function exisiting_photo_form(pic, csrf_value, link) {
+                // create form element
+                var form = document.createElement("form");
+                form.method = "POST";
+                form.action = link;
+                var my_list = JSON.parse(pic);
+
+                for (let i of my_list){
+                    // create input element and add to form
+                    var label = document.createElement("label");
+                    var input = document.createElement("input");
+                    input.type = "radio";
+                    input.id = i
+                    input.value = i;
+                    input.name = "pic_id";
+                    var img = document.createElement("img");
+                    img.src = "http://127.0.0.1:8000/blog/pic/"+i
+                    img.style = "max-width:50%; display:block; margin-left: auto; margin-right: auto;"
+                    img.className = "pic"
+                    console.log(i)
+                    img.alt = i
+                    label.for = i;
+                    label.style = "display:inline-block;";
+                    input.style = "display: none;";
+                    label.appendChild(input);
+                    label.appendChild(img);
+                    form.appendChild(label);
+                }
+                
+
+                // creating an input field for crsf token
+                var csrf = document.createElement("input");
+                csrf.type = "hidden";
+                csrf.name = "csrfmiddlewaretoken";
+                csrf.value = csrf_value;
+                form.appendChild(csrf);
+                        
+                
+                // create submit button and add to form
+                var submit = document.createElement("input");
+                submit.type = "submit";
+                submit.value = "Submit";
+                form.appendChild(submit);
+            
+                // get container div
+                var container = document.getElementById("container");
+            
+                // append form to container
+                container.innerHTML = ""
+                container.appendChild(form);
+
+
+                //scroll to the container
+                const elementY = container.getBoundingClientRect().top + window.pageYOffset;
+                const speed = 15; // adjust the scrolling speed here
+                const step = () => {
+                    window.scrollBy(0, speed);
+                    if (window.pageYOffset < elementY) {
+                        setTimeout(step, 10);
+                    }
+                }
+                step();
+                
+                const photos = document.querySelectorAll(".pic");
+                console.log(photos)
+
+                photos.forEach(photo => {
+                photo.addEventListener("click", function() {
+                    photos.forEach(photo => photo.classList.remove("selected"));
+                    var unchosed_pic = document.querySelectorAll('.pic');
+                    unchosed_pic.forEach(p => p.style = "max-width:50%; display:block; margin-left: auto; margin-right: auto;")
+                    this.classList.add("selected");
+                    var chosed_pic = document.querySelector('.selected');
+                    chosed_pic.style = "outline: 4px solid #0000FF; max-width:50%; display:block; margin-left: auto; margin-right: auto;"
+                    console.log("working")
+                });
+                });
+            }  
+        </script>
 {% endblock %}

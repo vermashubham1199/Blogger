@@ -12,8 +12,12 @@ from django.utils.decorators import method_decorator
 from django.db.utils import IntegrityError
 import asyncio
 from asgiref.sync import sync_to_async
+from blog.humanise import naturalsize
+import json
+from django.middleware.csrf import get_token
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from .models import (
-    Blog, Category, Comment, Report, ReportCategory, History, Tag, Bookmark, Like, Para
+    Blog, Category, Comment, Report, ReportCategory, History, Tag, Bookmark, Like, Para, CoverPhoto
 )
 
 # Create your views here.
@@ -309,10 +313,15 @@ class OwnerDetailView(LoginRequiredMixin, View):
             blog: an instance of model class Blog
         :return: HttpResponse
         """
+        if 'pk' in request.session:
+            del request.session['pk'] # deleting session used to created a blog
 
-        blog = get_object_or_404(Blog, pk=pk, owner=self.request.user)
+        blog = get_object_or_404(Blog, pk=pk, owner=self.request.user) # no need for async because there is no point
         pics = blog.picture_blog.all()
-        ctx = {'pics':pics, 'blog':blog}
+        pic_id = [p.id for p in pics] # creating a list of blog ids
+        pic_id_json = json.dumps(pic_id)
+        csrf_token = get_token(request) # getting value of csrf token
+        ctx = {'pics':pics, 'blog':blog, 'pic_id_json':pic_id_json, "csrf_token":csrf_token}
         return render(request, 'blog/owner_detail.html', ctx)
 #<--------------------------------------------------------------------------------------------------------------->
 
@@ -339,9 +348,15 @@ class BlogParaCreateView(LoginRequiredMixin,View):
             fm: an instance of form class PictureForm
         :return: HttpResponse
         """
+
+        if 'pk' in request.session: # This 'pk' (Primarykey) in session allows backend to know the current blog object 
+            pk = request.session['pk']
+            blog = get_object_or_404(Blog,pk=pk, owner=request.user.id) # gets a blog object by using blog id from session to later used in creating new para
+        else: # if there is no 'pk' in session then you won't be able to save new para
+            raise forms.ValidationError('no blog found')
         
         fm = PictureForm()
-        ctx = {'fm':fm}
+        ctx = {'fm':fm, 'pk':pk}
         return render(request, 'blog/blog_picture.html', ctx)
     
     def post(self, request):
@@ -434,7 +449,7 @@ class ParaAddView(LoginRequiredMixin, View):
 
         b = get_object_or_404(Blog, pk=bid, owner=self.request.user)
         fm = PictureForm()
-        ctx = {'fm':fm, 'blog':b.id}
+        ctx = {'fm':fm, 'pk':b.id}
         return render(request, 'blog/blog_picture.html', ctx)
 
     def post(self, request, bid):
@@ -457,7 +472,8 @@ class ParaAddView(LoginRequiredMixin, View):
             row.blog = b
             row.save()
             return redirect(reverse('blog:owner_detail', args=[b.id]))
-        ctx = {'fm':fm, 'pic':b.id}
+        pint(b.id)
+        ctx = {'fm':fm, 'pk':b.id}
         return render(request, 'blog/blog_picture.html', ctx)
 
 
@@ -495,6 +511,96 @@ class DeletePictureView(LoginRequiredMixin, View):
             pic.save()
             return redirect(reverse('blog:owner_detail', args=[pic.blog.id]))
         raise forms.ValidationError('you are not the owner')
+
+
+class CoverPhotoView(LoginRequiredMixin, View):
+    max_upload_limit = 5*1024*1024
+    max_upload_limit_text = naturalsize(max_upload_limit)
+
+    def post(self, request, pk):
+        pint('post working')
+        blog = get_object_or_404(Blog, pk=pk)
+        if request.user == blog.owner:
+            if 'image' in request.FILES:
+                img = request.FILES['image']
+                if  isinstance(img, InMemoryUploadedFile) or isinstance(img, TemporaryUploadedFile):
+                    try: 
+                        bytearr = img.read()
+                        instance = CoverPhoto(content_type=img.content_type, picture=bytearr, blog=blog)
+                        cover_pics = blog.picture_blog.all()
+                        for i in cover_pics: # checking are there any pre existing cover photos
+                            i.cover = False #turning all exising cover photos to false
+                            i.save()
+                        instance.save()
+                    except IntegrityError: # checking are there any pre existing cover photos
+                        cov = get_object_or_404(CoverPhoto, blog=blog)
+                        cov.delete()
+                        bytearr = img.read() 
+                        instance = CoverPhoto(content_type=img.content_type, picture=bytearr, blog=blog)
+                        instance.save() # deleteing and then saving new cover photo
+                        cover_pics = blog.picture_blog.all()
+                        
+            elif 'pic_id' in request.POST:
+                cov = CoverPhoto.objects.filter(blog=blog)
+                cover_pics = blog.picture_blog.all()
+                if cov:
+                    cov[0].delete() # deleteing and then saving before selecting existing cover photo
+                for i in cover_pics:
+                    i.cover = False # checking are there any pre existing cover photos
+                    i.save()
+                pk = request.POST['pic_id']
+                pic = get_object_or_404(Para, pk=pk, blog=blog)
+                pic.cover = True
+                pic.save()
+                pint(request.POST['pic_id'])
+            return redirect(reverse('blog:owner_detail', args=[blog.id]))
+
+
+
+def stream_cover_pic(request, pk):
+    """
+    returns a photo 
+
+    :praram ASGIRequest request: request object
+    :praram int pk: primary key of model Para 
+    :return: HttpResponse
+        """
+
+    blog = get_object_or_404(Blog, id=pk)
+    response = HttpResponse()
+    cov = CoverPhoto.objects.filter(blog=blog)
+    cover_pics = blog.picture_blog.all()
+    if cov:
+        response['Content-Type'] = cov[0].content_type
+        response['Content-Length'] = len(cov[0].picture)
+        response.write(cov[0].picture)
+    else:
+        for i in cover_pics:
+            if i.cover:
+                response['Content-Type'] = i.content_type
+                response['Content-Length'] = len(i.picture)
+                response.write(i.picture)    
+    return response
+
+
+class DeleteCoverPhotoView(LoginRequiredMixin, View):
+
+    def get(self, request, pk):
+
+        return render(request, 'blog/delete.html', {})
+
+    def post(self, request, pk):
+        blog = get_object_or_404(Blog, pk=pk)
+        cov = CoverPhoto.objects.filter(blog=blog)
+        cover_pics = blog.picture_blog.all()
+
+        for i in cover_pics:
+            i.cover = False # checking are there any pre existing cover photos
+            i.save()
+        if cov:
+            cov[0].delete()
+        return redirect(reverse('blog:owner_detail', args=[blog.id]))
+
 #<--------------------------------------------------------------------------------------------------------------->
 
 

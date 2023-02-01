@@ -25,7 +25,7 @@ class RegisterView(View):
         """
         Displays a RegistrationForm
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class RegistrationForm
         :return: HttpResponse
@@ -40,7 +40,7 @@ class RegisterView(View):
         """
         Creats a User using RegistrationForm
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class RegistrationForm
         :return if form is valid: HttpResponse
@@ -65,7 +65,7 @@ class HomepageView(View):
         """
         Displays home page
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             count_list: an instance of model class Category
         :return: HttpResponse

@@ -5,7 +5,7 @@
             {% for blog in blogs %}
             <div>
                 <li>
-                    <a href="{% url 'blog:blog_detail' blog.id %}">{{blog}}</a>
+                    <a href="{% url 'blog:blog_detail' blog.id %}">{{blog}} <img style=" max-width:50%; display:block; margin-left: auto; margin-right: auto;" src = "{% url 'blog:stream_cover_pic' blog.id %}"></a>
                     {% if user.is_authenticated %}
                     <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
                     <a href="#" onclick=

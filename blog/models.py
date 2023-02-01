@@ -113,6 +113,15 @@ class Para(models.Model):
     text = models.TextField()
     p_title = models.CharField(max_length=70)
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='picture_blog')
+    cover = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.p_title
+
+class CoverPhoto(models.Model):
+    blog = models.OneToOneField(Blog, on_delete=models.CASCADE, related_name='cover_photo_blog')
+    picture = models.BinaryField(null = True, blank = True, editable=True)
+    content_type = models.CharField(max_length=256, null=True, blank=True, help_text='The MIMEType of the file')
+
+    def __str__(self) -> str:
+        return str(self.blog)

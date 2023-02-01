@@ -36,7 +36,7 @@ class UserProfileView(LoginRequiredMixin, View):
         """
         Displays Users's profile page.
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             owner: an instance of model class User
             categories: a list contaning istance of model class Category
@@ -84,7 +84,7 @@ class ProfilePicUpdateView(LoginRequiredMixin, View):
         """
         Displays Users's profile picture update form.
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class ProfilePicForm
         :return: HttpResponse
@@ -98,7 +98,7 @@ class ProfilePicUpdateView(LoginRequiredMixin, View):
         """
         Updates Users's profile picture.
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class ProfilePicForm
         :return if form is valid: HttpResponse
@@ -118,7 +118,7 @@ def profile_stream_file(request):
     """
     this view function returns the profile pic of the user
 
-    :praram request: ASGIRequest
+    :praram ASGIRequest request: request object
         :return: HttpResponse
     """
 
@@ -137,7 +137,7 @@ class ProfilePicDeleteView(LoginRequiredMixin, View):
         """
         Displays profile picture delete form
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :return: HttpResponse
         """
 
@@ -148,7 +148,7 @@ class ProfilePicDeleteView(LoginRequiredMixin, View):
         """
         Deletes profile picture delete form
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :return: HttpResponseRedirect
         """
 
@@ -166,7 +166,7 @@ class OwnerAboutView(View):
         """
         Displays blog's owner about page
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             owner: an instance of model class User
             follow_list: a list of objects of model class Follow
@@ -191,8 +191,8 @@ class AddLikeCat(LoginRequiredMixin, View):
         """
         This view creates an instance of model class LikeCat
 
-        :praram request: ASGIRequest
-        :praram pk: int
+        :praram ASGIRequest request: request object
+        :praram int pk: primary key of Category model 
         :return: HttpResponse
         """
 
@@ -213,8 +213,8 @@ class DeleteLikeCat(LoginRequiredMixin, View):
         """
         This view deletes an instance of model class LikeCat
 
-        :praram request: ASGIRequest
-        :praram pk: int
+        :praram ASGIRequest request: request object
+        :praram int pk: primary key of Category model 
         :return: HttpResponse
         """
 
@@ -234,8 +234,8 @@ class AddFollowView(LoginRequiredMixin, View):
         """
         This view creates an instance of model class Follow
 
-        :praram request: ASGIRequest
-        :praram pk: int
+        :praram ASGIRequest request: request object
+        :praram int pk: primary key of User model 
         :return: HttpResponse
         """
 
@@ -256,8 +256,8 @@ class DeleteFollowView(LoginRequiredMixin, View):
         """
         This view deletes an instance of model class Follow
 
-        :praram request: ASGIRequest
-        :praram pk: int
+        :praram ASGIRequest request: request object
+        :praram int pk: primary key of User model 
         :return: HttpResponse
         """
 
@@ -277,7 +277,7 @@ class UserProfileUpdateView(LoginRequiredMixin,View):
         """
         This view displays UserUpdateForm
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class UserUpdateForm
         :return: HttpResponse
@@ -291,7 +291,7 @@ class UserProfileUpdateView(LoginRequiredMixin,View):
         """
         This view updates an instance of model class User
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class UserUpdateForm
         :return if form is valid: HttpResponse
@@ -312,7 +312,7 @@ class UserPasswordUpdateView(LoginRequiredMixin,View):
         """
         This view displays PasswordChangeForm
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class PasswordChangeForm
         :return: HttpResponse
@@ -326,7 +326,7 @@ class UserPasswordUpdateView(LoginRequiredMixin,View):
         """
         This view updates password of the User
 
-        :praram request: ASGIRequest
+        :praram ASGIRequest request: request object
         :context: 
             fm: an instance of form class UserUpdateForm
         :return if form is valid: HttpResponse

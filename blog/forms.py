@@ -27,9 +27,8 @@ class PictureForm(forms.ModelForm):
     picture = forms.FileField(required=False, label='File to Upload <= '+max_upload_limit_text)
     upload_field_name = 'picture'
 
-    def __init__(self, *args, **kwargs): # creating a instance variable of blog_id 
-        if kwargs.get('blog_id'): 
-            pint('add_id working')
+    def __init__(self, *args, **kwargs): # overiding init meathod 
+        if kwargs.get('blog_id'): # creating a instance variable of blog_id 
             self.blog_id = kwargs.pop('blog_id')
         else:
             self.blog_id = None

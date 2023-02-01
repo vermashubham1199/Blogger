@@ -4,7 +4,7 @@
         {% if blogs %}
             {% for blog in blogs %}
             <div>
-                <a href="{% url 'blog:owner_detail' blog.id %}">{{blog}}</a>
+                <a href="{% url 'blog:owner_detail' blog.id %}">{{blog}} <img style=" max-width:50%; display:block; margin-left: auto; margin-right: auto;" src = "{% url 'blog:stream_cover_pic' blog.id %}"></a>
             </div>
             {% endfor %}
         {% else %}
