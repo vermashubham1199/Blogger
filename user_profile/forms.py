@@ -39,9 +39,6 @@ class ProfilePicForm(forms.ModelForm):
         return instance
 
 
-class ChatForm(forms.Form):
-    chat = forms.CharField(max_length=256)
-
 
 class UserUpdateForm(UserChangeForm):
 

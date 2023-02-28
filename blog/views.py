@@ -381,7 +381,8 @@ class BlogParaCreateView(LoginRequiredMixin,View):
             row.blog = blog
             row.save()
             return redirect(self.sucess_url)
-        return render(request, 'blog/blog_picture.html', {'fm':fm})
+        ctx = {'fm':fm, 'pk':pk}
+        return render(request, 'blog/blog_picture.html', ctx)
 
 class ParaUpdateView(LoginRequiredMixin, View):
     """Updates a para in the blog"""

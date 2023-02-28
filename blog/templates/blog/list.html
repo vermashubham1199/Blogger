@@ -1,40 +1,52 @@
 {% extends "base.html" %}
+{% block navbar %}
+{% endblock %}
 {% block content %}
+        <style>
+            .star{
+                background-color: transparent; 
+                border: none;
+            }
+        </style>
         <h1>Blog list</h1>
         {% if blogs %}
+        <div>
             {% for blog in blogs %}
-            <div>
-                <li>
-                    <a href="{% url 'blog:blog_detail' blog.id %}">{{blog}} <img style=" max-width:50%; display:block; margin-left: auto; margin-right: auto;" src = "{% url 'blog:stream_cover_pic' blog.id %}"></a>
-                    {% if user.is_authenticated %}
+            <div class="card" style="width: 18rem;">
+                <img src="{% url 'blog:stream_cover_pic' blog.id %}" class="card-img-top" alt="...">
+                <div class="card-body">
+                  <h5 class="card-title">{{ blog.name }}</h5>
+                  <p class="card-text">{{ blog.abstract }}</p>
+                  <a href="{% url 'blog:blog_detail' blog.id %}" class="btn btn-primary">Read</a>
+                  {% if user.is_authenticated %}
                     <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
-                    <a href="#" onclick=
+                    <button class="star" href="#" onclick=
                         "favPost('{% url 'blog:bookmark_delete' blog.id %}', {{ blog.id }} );return false;"
                         {% if blog.id not in fav_blogs %} style="display: none;" {% endif %}
                         id="favorite_star_{{blog.id}}">
-                        <span class="fa-stack" style="vertical-align: middle;">
-                        <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
-                        <i class="fa fa-star-o fa-stack-1x"></i>
-                        </span>
-                    </a>
+                        <i class="bi bi-bookmark-fill"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16">
+                            <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                          </svg>
+                    </button>
                     <!-- the second href -->
-                    <a href="#" onclick=
+                    <button class="star" href="#" onclick=
                         "favPost('{% url 'blog:bookmark_add' blog.id %}', {{ blog.id }} );return false;"
                         {% if blog.id in fav_blogs %} style="display: none;" {% endif %}
                         id="unfavorite_star_{{blog.id}}">
-                        <span class="fa-stack" style="vertical-align: middle;">
-                        <i class="fa fa-star fa-stack-1x" style="display: none; color: orange;"></i>
-                        <i class="fa fa-star-o fa-stack-1x"></i>
-                        </span>
-                    </a>
+                        <i class="bi bi-bookmark"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/>
+                          </svg>
+                    </button>
                     {% endif %}
-                </li>
+                </div>
             </div>
+                
             {% endfor %}
         {% else %}
             <p>There are no blogs.</p>
         {% endif %}
-        <a href="{% url 'home:all' %}">home</a>
         <script>
             function favPost(url, thing_id) {
                 console.log('Requesting JSON');

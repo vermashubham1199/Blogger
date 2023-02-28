@@ -4,11 +4,16 @@
         {% if blogs %}
             {% for blog in blogs %}
             <div>
-                <a href="{% url 'blog:owner_detail' blog.id %}">{{blog}} <img style=" max-width:50%; display:block; margin-left: auto; margin-right: auto;" src = "{% url 'blog:stream_cover_pic' blog.id %}"></a>
-            </div>
+                <div class="card" style="width: 18rem;">
+                    <img src="{% url 'blog:stream_cover_pic' blog.id %}" class="card-img-top" alt="...">
+                    <div class="card-body">
+                      <h5 class="card-title">{{ blog.name }}</h5>
+                      <p class="card-text">{{ blog.abstract }}</p>
+                      <a href="{% url 'blog:owner_detail' blog.id %}" class="btn btn-primary">Read</a>
+                    </div>
+                </div>
             {% endfor %}
         {% else %}
             <p>There are no blogs.</p>
         {% endif %}
-        <a href="{% url 'user_profile:profile_page' %}">Profile</a>
 {% endblock %}

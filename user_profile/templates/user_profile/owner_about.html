@@ -4,7 +4,7 @@
         <h1>{{ owner.username }}</h1>
         <a href="{% url 'home:all' %}">home</a>
         {% if owner.id != request.user.id %}
-                <a href="{% url 'user_profile:chat' owner.id %}">Chat</a>
+                <a href="{% url 'chat:new_chat' owner.user_uuid.uuid %}">Chat</a>
         {% endif %}
         {% if request.user != owner %}
                 <li style="list-style:none;">

@@ -12,9 +12,11 @@ from django.urls import reverse_lazy
 from user_profile.models import ProfilePic
 from django.contrib.auth.models import User
 from blog.models import Blog, Bookmark, Category, LikeCat, Like
+from .models import UserUuid
 from blog.tests import pint
 from django.db.models import Count
 import asyncio
+from blogger.tasks import test_funk
 
 class RegisterView(View):
     """A view for regestring new users"""
@@ -51,6 +53,8 @@ class RegisterView(View):
         fm = RegistrationForm(request.POST)
         if fm.is_valid():
             user = fm.save()
+            uuid = UserUuid(user=user) #creating uuid id for this user
+            uuid.save()
             pic = ProfilePic(owner=user) #cerating a blank user profile pic
             pic.save() #saving a blank user profile pic
             return redirect(self.sucess_url)
@@ -71,7 +75,7 @@ class HomepageView(View):
         :return: HttpResponse
         """
 
-
+        test_funk.delay()
         if request.user.is_authenticated:
             count_list = Category.recomendations.user_recomendation() #coustom manager method 
             

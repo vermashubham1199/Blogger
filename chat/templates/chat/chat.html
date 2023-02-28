@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+    <style>
+        #owner {
+            text-align: right;
+        }
+        #other {
+            text-align: left;
+        }
+        .time-user {
+            color: rgb(255, 0, 55);
+            font-size: x-small;
+        }
+        .chat-list {
+            list-style-type: none;
+            font-size: xx-large;
+        }
+        #img-container {
+            height: 100px;
+        }
+    </style>
+    <div id="img-container">
+        <img style="max-width: 40mm; max-height: 40mm; display:block; margin-left: auto; margin-right: auto; float: right;" src = "{% url 'user_profile:profile_pic_stream_chat' other_user.pk %}"><h1>{{other_user}}</h1>
+    </div>
+    <div id="chat-box">
+        {% for chat in chats %}
+            {% if user == chat.user %}
+                <li id="owner" class="chat-list">
+                    {{chat.message}} <span class="time-user">{{chat.timestamp}} {{chat.user}}</span>
+                </li>
+            {% else %}
+                <li id="other" class="chat-list">
+                    {{chat.message}} <span class="time-user">{{chat.timestamp}} {{chat.user}}</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <input type="text" name="" id="chat-input" size="100"><br>
+    <input type="button" value="send" id="chat-submit">
+    {{ group_name|json_script:"group-name" }}
+    {{ user_uuid|json_script:"user" }}
+    ,<script>
+        const groupName = JSON.parse(document.getElementById('group-name').textContent);
+        userUuid = JSON.parse(document.getElementById('user').textContent);
+        console.log(user)
+        console.log(typeof groupName)
+        var ws = new WebSocket('ws://'+window.location.host+'/ws/'+groupName+'/');
+        ws.onopen = function(){
+            console.log("websocket conection open");
+        };
+        ws.onmessage = function (event){
+            console.log("message received", JSON.parse(event.data));
+            var mesage = JSON.parse(event.data);
+            console.log(event.data)
+            var chat_box = document.getElementById('chat-box')
+            var li = document.createElement("li");
+            li.className = "chat-list"
+            if (userUuid === mesage.user_uuid) {
+                console.log("working 1",user, mesage.user_uuid)
+                li.id = "owner";
+                li.style = "text-align: right; list-style-type: none; font-size: xx-large; "
+            } 
+            else {
+                console.log(userUuid, mesage.user_uuid)
+                li.id = "other";
+                li.style = "text-align: left; list-style-type: none; font-size: xx-large; "
+            }
+            var span = document.createElement('span');
+            var time = new Date().toLocaleTimeString();
+            var txt_span = document.createTextNode(time);
+            span.style = 'color: rgb(255, 0, 55); font-size: x-small; '
+            var txt = document.createTextNode(mesage.msg);
+            span.appendChild(txt_span)
+            li.appendChild(txt)
+            li.appendChild(span)
+            chat_box.appendChild(li)
+
+        };
+        ws.onclose = function(event){
+            console.log("websocket closed", event);
+        };
+        document.getElementById('chat-submit').onclick = function(event){
+            const messageValue = document.getElementById('chat-input')
+            const msg = messageValue.value
+            ws.send(JSON.stringify({
+                'msg':msg,
+                "user_uuid":userUuid
+            }))
+            messageValue.value = ""
+        }
+    </script>
+{% endblock %}

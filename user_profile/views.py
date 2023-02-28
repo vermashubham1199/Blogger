@@ -12,8 +12,8 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from .forms import ProfilePicForm, ChatForm, UserUpdateForm
-from .models import ProfilePic, UserMessage, Chat, Follow
+from .forms import ProfilePicForm, UserUpdateForm
+from .models import ProfilePic, Follow
 from django.http import HttpResponse
 from blog.tests import pint
 from blog.models import Category, LikeCat
@@ -114,21 +114,6 @@ class ProfilePicUpdateView(LoginRequiredMixin, View):
         return render(request, 'profile_pic_create', ctx)
 
 
-def profile_stream_file(request):
-    """
-    this view function returns the profile pic of the user
-
-    :praram ASGIRequest request: request object
-        :return: HttpResponse
-    """
-
-    pic = get_object_or_404(ProfilePic, owner=request.user)
-    response = HttpResponse()
-    if pic.content_type:
-        response['Content-Type'] = pic.content_type
-        response['Content-Length'] = len(pic.picture)
-        response.write(pic.picture)
-    return response
 
 class ProfilePicDeleteView(LoginRequiredMixin, View):
     """Deletes Users's profile picture."""
@@ -340,77 +325,38 @@ class UserPasswordUpdateView(LoginRequiredMixin,View):
             update_session_auth_hash(request, fm.user)
             return redirect(reverse('user_profile:profile_page'))
         return render(request, 'user_profile/user_update.html', ctx)
-            
 
 
+def profile_stream_file(request):
+    """
+    this view function returns the profile pic of the user
 
+    :praram ASGIRequest request: request object
+        :return: HttpResponse
+    """
 
+    pic = get_object_or_404(ProfilePic, owner=request.user)
+    response = HttpResponse()
+    if pic.content_type:
+        response['Content-Type'] = pic.content_type
+        response['Content-Length'] = len(pic.picture)
+        response.write(pic.picture)
+    return response
 
+def chat_profile_stream_file(request, pk):
+    """
+    this view function returns the profile pic of the user
 
+    :praram ASGIRequest request: request object
+        :return: HttpResponse
+    """
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class CreateChat(LoginRequiredMixin, View):
-
-    def get(self, request, pk):
-        fm = ChatForm()
-        op = get_object_or_404(User, pk=pk)
-        sender = UserMessage.objects.filter(chat__sender=request.user, chat__receiver=op)
-        receiver = UserMessage.objects.filter(chat__receiver=request.user, chat__sender=op)
-        row = (sender | receiver)
-        ordered_row = row.order_by('created_at')
-        ctx = {'fm':fm, 'ordered_row':ordered_row}
-        return render(request, 'user_profile/chat.html', ctx)
-    
-    def post(self, request, pk):
-        fm = ChatForm(request.POST)
-        ctx = {'fm':fm}
-        if fm.is_valid():
-            c = fm.cleaned_data.get('chat')
-            rev = get_object_or_404(User, pk=pk)
-            owner_row, created = Chat.objects.get_or_create(sender=request.user, receiver=rev)
-            row1= UserMessage(text=c, chat=owner_row)
-            row1.save()
-            return redirect(reverse('user_profile:chat', args=[rev.id]))
-        return render(request, 'user_profile/chat.html', ctx)
-
-class ListChat(LoginRequiredMixin, View):
-
-    def get(self, request):
-        sender = Chat.objects.filter(sender=request.user)
-        receiver = Chat.objects.filter(receiver=request.user)
-        ordered_row = sender | receiver
-        ctx = {'ordered_row':ordered_row}
-        return render(request, 'user_profile/chat_list.html', ctx)
-
-
-
+    pint("view working")
+    user = get_object_or_404(User, pk=pk)
+    pic = get_object_or_404(ProfilePic, owner=user)
+    response = HttpResponse()
+    if pic.content_type:
+        response['Content-Type'] = pic.content_type
+        response['Content-Length'] = len(pic.picture)
+        response.write(pic.picture)
+    return response

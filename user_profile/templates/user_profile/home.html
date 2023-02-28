@@ -1,4 +1,20 @@
 {% extends "base.html" %}
+{% block navbar %}
+<li class="nav-item">
+        <a class="nav-link" href = "{% url 'home:register' %}?next={{request.path}}"> Sign up </a>
+</li>
+<li class="nav-item">
+        <a class="nav-link" href="{% url 'blog:blog_create' %}"> create a blog </a>
+</li>
+<li class="nav-item">
+        <a class="nav-link" href="{% url 'blog:owner_list' %}">Own Blogs</a>
+</li>
+{% endblock %}
+{% block dropdown_list %}
+        <li><a class="dropdown-item" href="{% url 'user_profile:profile_pic' %}">Profile pic</a></li>
+        <li><a class="dropdown-item" href="{% url 'user_profile:user_update' %}">Update Profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'user_profile:password_update' %}">Update Password</a></li>
+{% endblock %}
 {% block content %}
         <img style="max-width: 40mm; max-height: 40mm; display:block; margin-left: auto; margin-right: auto; float: right;" src = "{% url 'user_profile:profile_pic_stream' %}">
         {% if owner == request.user %}
@@ -6,6 +22,7 @@
         {% endif %}
         <h1>{{ owner.username }}</h1>
         <ul >
+                <h1>Catogaries</h1>
                 {% for category in categories %}
                         <li style="list-style-type: none;"> 
                                 {{category.name}}
@@ -34,13 +51,6 @@
                         </li>
                 {% endfor %}
         </ul>
-        <a href="{% url 'blog:owner_list' %}">list</a>
-        <a href="{% url 'blog:blog_create' %}">create a blog</a>
-        <a href="{% url 'user_profile:profile_pic' %}">create a pic</a>
-        <a href="{% url 'home:all' %}">home</a>
-        <a href="{% url 'user_profile:list_chat' %}">chats</a>
-        <a href="{% url 'user_profile:user_update' %}">update profile</a>
-        <a href="{% url 'user_profile:password_update' %}">password update</a>
 
         <script>
                 function favPost(url, thing_id) {
