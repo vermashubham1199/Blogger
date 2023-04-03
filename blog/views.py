@@ -96,8 +96,12 @@ class BlogCreateView(LoginRequiredMixin, View):
             row = fm.save(commit=False)
             row.owner = request.user
             row.save()
+            para_create_url = reverse('blog:blog_picture', kwargs={"pk":row.id})
             request.session['pk'] = row.pk # saving current blog id in session
-            return redirect(self.sucess_url)
+            pint("session created")
+            pint(request.session.get("pk"), "get, session created")
+            pint(request.session)
+            return redirect(para_create_url)
         return render(request, 'blog/blog_create.html', {'fm':fm})
 
 
@@ -339,7 +343,7 @@ class BlogParaCreateView(LoginRequiredMixin,View):
     sucess_url = reverse_lazy('blog:blog_picture')
     home = reverse_lazy('home:all')
 
-    def get(self, request):
+    def get(self, request, pk):
         """
         Displays PictureForm
 
@@ -348,18 +352,21 @@ class BlogParaCreateView(LoginRequiredMixin,View):
             fm: an instance of form class PictureForm
         :return: HttpResponse
         """
-
+        blog = get_object_or_404(Blog,pk=pk, owner=request.user.id)
         if 'pk' in request.session: # This 'pk' (Primarykey) in session allows backend to know the current blog object 
-            pk = request.session['pk']
-            blog = get_object_or_404(Blog,pk=pk, owner=request.user.id) # gets a blog object by using blog id from session to later used in creating new para
+            seeeion_pk = request.session['pk']
+            pint(request.session)
         else: # if there is no 'pk' in session then you won't be able to save new para
+            pint("can't read session in para crate view")
+            pint(str(request.session), "str")
+            pint(request.session.get("pk"), "get")
             raise forms.ValidationError('no blog found')
         
         fm = PictureForm()
         ctx = {'fm':fm, 'pk':pk}
         return render(request, 'blog/blog_picture.html', ctx)
     
-    def post(self, request):
+    def post(self, request, pk):
         """
         creates a new para
 
@@ -369,10 +376,9 @@ class BlogParaCreateView(LoginRequiredMixin,View):
         :return if form is valid: HttpResponseRedirect
         :return if from is not valid: HttpResponse
         """
-
+        blog = get_object_or_404(Blog,pk=pk, owner=request.user.id)
         if 'pk' in request.session: # This 'pk' (Primarykey) in session allows backend to know the current blog object 
-            pk = request.session['pk']
-            blog = get_object_or_404(Blog,pk=pk, owner=request.user.id) # gets a blog object by using blog id from session to later used in creating new para
+            session_pk = request.session['pk']
         else: # if there is no 'pk' in session then you won't be able to save new para
             raise forms.ValidationError('no blog found')
         fm = PictureForm(request.POST, request.FILES or None, blog_id=blog.id)

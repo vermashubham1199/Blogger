@@ -20,3 +20,5 @@ class ChatModel(models.Model):
 
     def __str__(self) -> str:
         return str(self.user.first_name)
+    
+

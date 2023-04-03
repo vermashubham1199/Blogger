@@ -44,7 +44,7 @@
         userUuid = JSON.parse(document.getElementById('user').textContent);
         console.log(user)
         console.log(typeof groupName)
-        var ws = new WebSocket('ws://'+window.location.host+'/ws/'+groupName+'/');
+        var ws = new WebSocket('ws://'+window.location.host+'/ws/chat/'+groupName+'/');
         ws.onopen = function(){
             console.log("websocket conection open");
         };

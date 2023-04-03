@@ -44,8 +44,7 @@ class UserProfileView(LoginRequiredMixin, View):
         :return: HttpResponse
         """
 
-        if 'pk' in request.session:
-            del request.session['pk']
+        
         owner, categories = await asyncio.gather(self.helper_user(), self.helper_cat())
         if request.user.is_authenticated:
             rows = await self.helper_fav()
@@ -360,3 +359,5 @@ def chat_profile_stream_file(request, pk):
         response['Content-Length'] = len(pic.picture)
         response.write(pic.picture)
     return response
+
+

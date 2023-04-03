@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 from .views import (
     UserProfileView, ProfilePicUpdateView, profile_stream_file, ProfilePicDeleteView, OwnerAboutView, AddLikeCat, DeleteLikeCat, AddFollowView, 
-    DeleteFollowView, UserProfileUpdateView, UserPasswordUpdateView, chat_profile_stream_file
+    DeleteFollowView, UserProfileUpdateView, UserPasswordUpdateView, chat_profile_stream_file,
 )
 # from .models import Blog
 
