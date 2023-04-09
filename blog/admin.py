@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Blog, Category, Comment, Report, ReportCategory, History, Tag, Bookmark, Like, Para, LikeCat, CoverPhoto
+    Blog, Category, Comment, Report, ReportCategory, History, Tag, Bookmark, Like, Para, LikeCat, CoverPhoto, BlogHistory
 )
 
 # Register your models here.
@@ -21,3 +21,4 @@ admin.site.register(Like)
 admin.site.register(Para)
 admin.site.register(LikeCat)
 admin.site.register(CoverPhoto)
+admin.site.register(BlogHistory)

@@ -9,10 +9,10 @@
             }
         </style>
         <h1>Blog list</h1>
-        {% if blogs %}
         <div>
-            {% for blog in blogs %}
-            <div class="card" style="width: 18rem;">
+            {% for blog in final_list %}
+            {% if blog.name %}
+            <div class="card" style="width: 18rem; margin-top: 2mm;">
                 <img src="{% url 'blog:stream_cover_pic' blog.id %}" class="card-img-top" alt="...">
                 <div class="card-body">
                   <h5 class="card-title">{{ blog.name }}</h5>
@@ -42,11 +42,72 @@
                     {% endif %}
                 </div>
             </div>
-                
-            {% endfor %}
+            {% elif blog.first_name %} 
+                <div class="card" style="width: 18rem; margin-top: 2mm;">
+                    <img src="{% url 'user_profile:profile_pic_stream_chat' blog.id %}" class="card-img-top" alt="...">
+                    <div class="card-body">
+                      <h5 class="card-title">{{ blog.first_name  }} {{ blog.last_name  }}</h5>
+                      <p class="card-text"></p>
+                      <a href="{% url 'user_profile:owner_about' blog.id %}" class="btn btn-primary">{{ blog.first_name  }}</a>
+                    </div>
+                </div>             
         {% else %}
             <p>There are no blogs.</p>
         {% endif %}
+        {% endfor %}
+        
+        
+            <nav aria-label="...">
+                <ul class="pagination">
+                
+                {% if search %}
+                    {% if previous_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/blog/?page={{previous_page}}&q={{search}}" tabindex="-1">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for i in total_pages %}
+                    {% if current_page == i %}
+                        <li class="page-item active">
+                            <a class="page-link" href="http://127.0.0.1:8000/blog/?page={{i}}&q={{search}}">{{i}} <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="http://127.0.0.1:8000/blog/?page={{i}}&q={{search}}">{{i}}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if next_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/blog/?page={{next_page}}&q={{search}}">Next</a>
+                    </li>
+                    {% endif %}
+                {% else %}
+                    {% if previous_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/blog/?page={{previous_page}}" tabindex="-1">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for i in total_pages %}
+                    {% if current_page == i %}
+                        <li class="page-item active">
+                            <a class="page-link" href="http://127.0.0.1:8000/blog/?page={{i}}">{{i}} <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="http://127.0.0.1:8000/blog/?page={{i}}">{{i}}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if next_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/blog/?page={{next_page}}">Next</a>
+                    </li>
+                    {% endif %}
+                {% endif %}
+                </ul>
+            </nav>
+        
+            
+       
         <script>
             function favPost(url, thing_id) {
                 console.log('Requesting JSON');

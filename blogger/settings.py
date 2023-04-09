@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.admindocs",
     "django_celery_results",
+    'rest_framework',
 
 
 
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     "user_profile",
     "chat",
     "notification",
+    "blog_api",
 ]
 
 MIDDLEWARE = [
@@ -162,3 +164,11 @@ task_serializer = "json"
 timezone = "Asia/Kolkata"
 
 result_backend = "django-db"
+
+
+# REST FRAMEWORK SETTINGS
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5
+}

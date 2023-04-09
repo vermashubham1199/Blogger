@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
+from django.db.models import Q
+from django.contrib.auth.models import User
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse
 from django import forms
@@ -16,6 +18,8 @@ from blog.humanise import naturalsize
 import json
 from django.middleware.csrf import get_token
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
+from django.core.paginator import Paginator
+from itertools import chain
 from .models import (
     Blog, Category, Comment, Report, ReportCategory, History, Tag, Bookmark, Like, Para, CoverPhoto
 )
@@ -39,11 +43,39 @@ class BlogListView(View):
         """
 
         blogs = Blog.objects.all()
+        search = request.GET.get("q")
+        search_owner = []
+        q = False
+        final_list = list(blogs)
+        if search:
+            search = search.replace("+", " ")
+            q = search
+            blogs = Blog.objects.filter(name__contains=search)
+            search_owner = User.objects.filter(Q(first_name__contains=search)|Q(last_name__contains=search)|Q(username__contains=search))
+            final_list = list(chain(search_owner, blogs))
+            pint(final_list)
         fav_blogs = []
         if request.user.is_authenticated:
             rows = request.user.user_blog_bookmark.values('id') # returns a list of bookmarked Blogs in form of dict objects
             fav_blogs = [row['id'] for row in rows] # creating a list of blog IDs that user has bookmarked
-        ctx=  {'blogs':blogs, 'fav_blogs':fav_blogs}
+        paginator = Paginator(final_list, 5)
+        page = request.GET.get("page")
+        page_obj = paginator.get_page(page)
+        total_pages = [i+1 for i in range(paginator.num_pages)]
+        if page_obj.has_next():
+            next_page = page_obj.next_page_number()
+        else:
+            next_page = False
+        
+        if page_obj.has_previous():
+            previous_page = page_obj.previous_page_number()
+        else:
+            previous_page = False
+        current_page = page_obj.number
+        ctx=  {
+            'fav_blogs':fav_blogs, "final_list":page_obj, "total_pages":total_pages, "current_page":current_page,
+              "next_page":next_page, "previous_page":previous_page, "search":q
+        }
         return render(request, 'blog/list.html', ctx)
 
 

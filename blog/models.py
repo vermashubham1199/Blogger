@@ -103,6 +103,7 @@ class Blog(models.Model):
     report = models.ManyToManyField(User, through='Report', related_name='user_blog_report')
     comment = models.ManyToManyField(User, through='Comment', related_name='user_blog_comment')
     counter = models.IntegerField(default=0)
+    blog_history = models.ManyToManyField(User, through='BlogHistory', related_name='user_blog_history')
 
     def __str__(self) -> str:
         return self.name
@@ -125,3 +126,11 @@ class CoverPhoto(models.Model):
 
     def __str__(self) -> str:
         return str(self.blog)
+    
+
+class BlogHistory(models.Model):
+    blog = models.ForeignKey('Blog', on_delete=models.CASCADE, related_name='blog_history_throu')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_blog_history_throu')
+
+    def __str__(self) -> str:
+        return f"{self.owner.username} {self.blog.name}"

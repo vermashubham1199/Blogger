@@ -83,8 +83,8 @@
             </a>
         </li>
        {% endif %}
-        <form class="d-flex" role="search">
-          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <form class="d-flex" role="search" method="get" action="{% url 'blog:blog_list' %}">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
           <button class="btn btn-outline-success" type="submit" style="background-color: transparent; border: none;" >
             <i class="bi bi-search"></i>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
