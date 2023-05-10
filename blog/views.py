@@ -26,12 +26,38 @@ from .models import (
 
 # Create your views here.
 
+# base class
+#<--------------------------------------------------------------------------------------------------------------->\
+class PaginationView(View):
+    
+    async def helper_page_no(self, current_page, max_page):
+        min_page_no = current_page - 3
+        max_page_no = current_page + 3
+        if min_page_no < 1 :
+            min_page_no = 1
+        if max_page_no > max_page:
+            max_page_no = max_page
+        return list(range(min_page_no, max_page_no+1))
+    
+    async def helper_next_page(self, page_obj):
+        if page_obj.has_next():
+            next_page = page_obj.next_page_number()
+        else:
+            next_page = False
+        
+        if page_obj.has_previous():
+            previous_page = page_obj.previous_page_number()
+        else:
+            previous_page = False
+        return next_page, previous_page
+#<--------------------------------------------------------------------------------------------------------------->
+
 #Blog
 #<--------------------------------------------------------------------------------------------------------------->
-class BlogListView(View):
+class BlogListView(PaginationView):
     """Displays a list of blogs"""
 
-    def get(self, request):
+    async def get(self, request):
         """
         Displays list of blogs.
 
@@ -42,41 +68,33 @@ class BlogListView(View):
         :return: HttpResponse
         """
 
-        blogs = Blog.objects.all()
+        blogs = await sync_to_async(Blog.objects.all)()
         search = request.GET.get("q")
         search_owner = []
         q = False
-        final_list = list(blogs)
+        final_list = await sync_to_async(list)(blogs)
         if search:
             search = search.replace("+", " ")
             q = search
-            blogs = Blog.objects.filter(name__contains=search)
-            search_owner = User.objects.filter(Q(first_name__contains=search)|Q(last_name__contains=search)|Q(username__contains=search))
-            final_list = list(chain(search_owner, blogs))
+            blogs,search_owner = await asyncio.gather(sync_to_async(Blog.objects.filter)(name__contains=search),sync_to_async(User.objects.filter)(Q(first_name__contains=search)|Q(last_name__contains=search)|Q(username__contains=search)))
+            final_list = await sync_to_async(list)(chain(search_owner, blogs))
             pint(final_list)
         fav_blogs = []
         if request.user.is_authenticated:
-            rows = request.user.user_blog_bookmark.values('id') # returns a list of bookmarked Blogs in form of dict objects
+            rows = await sync_to_async(list)(request.user.user_blog_bookmark.values('id')) # returns a list of bookmarked Blogs in form of dict objects
             fav_blogs = [row['id'] for row in rows] # creating a list of blog IDs that user has bookmarked
-        paginator = Paginator(final_list, 5)
+        paginator = Paginator(final_list, 2)
         page = request.GET.get("page")
         page_obj = paginator.get_page(page)
-        total_pages = [i+1 for i in range(paginator.num_pages)]
-        if page_obj.has_next():
-            next_page = page_obj.next_page_number()
-        else:
-            next_page = False
-        
-        if page_obj.has_previous():
-            previous_page = page_obj.previous_page_number()
-        else:
-            previous_page = False
-        current_page = page_obj.number
+        page_lis = await self.helper_page_no(page_obj.number, paginator.num_pages)
+        next_page, previous_page = await self.helper_next_page(page_obj)
+
         ctx=  {
-            'fav_blogs':fav_blogs, "final_list":page_obj, "total_pages":total_pages, "current_page":current_page,
+            'fav_blogs':fav_blogs, "final_list":page_obj, "total_pages":page_lis, "current_page":page_obj.number,
               "next_page":next_page, "previous_page":previous_page, "search":q
         }
         return render(request, 'blog/list.html', ctx)
+    
 
 
 class BlogCreateView(LoginRequiredMixin, View):
@@ -372,7 +390,7 @@ class BlogParaCreateView(LoginRequiredMixin,View):
 
     works with blog create view
     """
-    sucess_url = reverse_lazy('blog:blog_picture')
+    
     home = reverse_lazy('home:all')
 
     def get(self, request, pk):
@@ -418,7 +436,7 @@ class BlogParaCreateView(LoginRequiredMixin,View):
             row = fm.save(commit=False)
             row.blog = blog
             row.save()
-            return redirect(self.sucess_url)
+            return redirect(reverse('blog:blog_picture', kwargs={'pk':pk}))
         ctx = {'fm':fm, 'pk':pk}
         return render(request, 'blog/blog_picture.html', ctx)
 

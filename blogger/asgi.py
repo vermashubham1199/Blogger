@@ -14,6 +14,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 import chat.routing
 import notification.routing
+import user_profile.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "blogger.settings")
 
@@ -25,6 +26,7 @@ application = ProtocolTypeRouter({
         URLRouter([
         *chat.routing.websocket_urlpatterns,
         *notification.routing.websocket_urlpatterns,
+        *user_profile.routing.websocket_urlpatterns,
         ])
     )
 })

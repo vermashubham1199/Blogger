@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block navbar %}
+
+{% endblock %}
+{% block content %}
+        
+        {% for blog, values in final_dict.items %}
+             
+             {% for i in values.bookmark %}
+                <h1>{{i.owner}}</h1>
+             {% endfor %}
+
+             {% for i in values.like %}
+                <h1>{{i.owner}}</h1>
+             {% endfor %}
+
+             {% for i in values.blog_history %}
+                <h1>{{i.owner}}</h1>
+             {% endfor %}
+             
+             {% for i in values.comment %}
+                <h1>{{i.owner}}</h1>
+             {% endfor %}
+
+        {% endfor %}
+        
+            
+            
+{% endblock %}

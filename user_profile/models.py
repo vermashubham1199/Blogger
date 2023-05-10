@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from .managers import GraphManager
 
 # Create your models here.
 class ProfilePic(models.Model):
@@ -11,6 +12,10 @@ class ProfilePic(models.Model):
 class Follow(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_owner_follow')
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_follower')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    graph = GraphManager()
+    objects = models.Manager()
 
     def __str__(self) -> str:
         return self.owner.username

@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 from .views import (
     UserProfileView, ProfilePicUpdateView, profile_stream_file, ProfilePicDeleteView, OwnerAboutView, AddLikeCat, DeleteLikeCat, AddFollowView, 
-    DeleteFollowView, UserProfileUpdateView, UserPasswordUpdateView, chat_profile_stream_file,
+    DeleteFollowView, UserProfileUpdateView, UserPasswordUpdateView, chat_profile_stream_file, DashboardDetailView
 )
 # from .models import Blog
 
@@ -20,4 +20,5 @@ urlpatterns = [
     path('user_profile_update/', UserProfileUpdateView.as_view(), name = 'user_update'),
     path('userpassword_update/', UserPasswordUpdateView.as_view(), name = 'password_update'),
     path('proflie_picture_stream_chat/<int:pk>', chat_profile_stream_file, name = 'profile_pic_stream_chat'),
+    path('dahsboard_detail/<int:pk>', DashboardDetailView.as_view(), name = 'dashboard_detail'),
 ]

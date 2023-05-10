@@ -14,7 +14,6 @@ class FollowNotificationConsumer(AsyncConsumer):
 
     async def websocket_connect(self,event):
         self.user = self.scope["user"]
-        pint(self.user)
         if self.user.is_authenticated:
             await self.create_channel_name()
             await self.channel_layer.group_add(self.user.username, self.channel_name)
@@ -22,10 +21,11 @@ class FollowNotificationConsumer(AsyncConsumer):
                 await self.channel_layer.group_add(i, self.channel_name)
                 pint("group name", i)
             await self.get_followed_users_list()
-        await self.send({
-            "type":"websocket.accept"
-        })
+            await self.send({
+                "type":"websocket.accept"
+            })
         pint("web_socket is working")
+        pint(self.channel_name, "notification channel name")
 
     @sync_to_async
     def get_followed_users_list(self):
@@ -35,7 +35,9 @@ class FollowNotificationConsumer(AsyncConsumer):
 
 
     async def websocket_disconnect(self, event):
-         pint("websocket disconected", event)
+         if self.user.is_authenticated:
+            pint("websocket disconected---------------", event)
+            await self.delete_channel_name()
          raise StopConsumer
     
     async def notification_send(self, event):
@@ -66,19 +68,23 @@ class FollowNotificationConsumer(AsyncConsumer):
                 "notification_id":notification_id
                 })
             })
+    
+    
 
 
     @sync_to_async
     def create_channel_name(self):
-        try:
-            channel_name = get_object_or_404(ChannelName, owner=self.user)
-            channel_name.channel_name = self.channel_name
-            channel_name.save()
-            pint("try in create channle name", channel_name)
-        except:
-            channel_name = ChannelName(channel_name=self.channel_name, owner=self.user)
-            channel_name.save()
-            pint("except in create channle name", channel_name)
+        channel_name = ChannelName(channel_name=self.channel_name, owner=self.user, consumer_name="FollowNotificationConsumer")
+        channel_name.save()
+        self.channel_id = channel_name.id
+        pint("except in dashboard create channle name", channel_name)
+
+    @sync_to_async
+    def delete_channel_name(self):
+        channel_name = get_object_or_404(ChannelName, pk=self.channel_id)
+        channel_name.delete()
+        pint("deleted channel name", channel_name)
+
     
     @sync_to_async
     def get_blog_owner(self, pk):

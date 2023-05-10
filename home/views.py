@@ -17,6 +17,9 @@ from blog.tests import pint
 from django.db.models import Count
 import asyncio
 from blogger.tasks import test_funk
+from django.core.paginator import Paginator
+from blog.views import PaginationView
+from asgiref.sync import sync_to_async
 
 class RegisterView(View):
     """A view for regestring new users"""
@@ -62,10 +65,10 @@ class RegisterView(View):
 
 
 
-class HomepageView(View):
+class HomepageView(PaginationView):
     """A view for displaying home page."""
 
-    def get(self, request):
+    async def get(self, request):
         """
         Displays home page
 
@@ -75,12 +78,17 @@ class HomepageView(View):
         :return: HttpResponse
         """
 
-        test_funk.delay()
         if request.user.is_authenticated:
-            count_list = Category.recomendations.user_recomendation() #coustom manager method 
+            count_list = await sync_to_async(Category.recomendations.user_recomendation)(request.user.id) #coustom manager method 
             
         else:
-             count_list = Category.recomendations.anonymous_recomendation() #coustom manager method
+             count_list = await sync_to_async(list)(Category.recomendations.anonymous_recomendation()) #coustom manager method
+        
+        paginator = Paginator(count_list, 2)
+        page = request.GET.get("page")
+        page_obj = paginator.get_page(page)
+        page_lis = await self.helper_page_no(page_obj.number, paginator.num_pages)
+        next_page, previous_page = await self.helper_next_page(page_obj)
              
-        ctx = {'count_list':count_list}
-        return render(request, 'home/home.html', ctx)
+        ctx = {"final_list":page_obj, "total_pages":page_lis, "next_page":next_page, "previous_page":previous_page}
+        return await sync_to_async(render)(request, 'home/home.html', ctx)

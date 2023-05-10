@@ -24,13 +24,23 @@ from django.contrib.auth.forms import PasswordChangeForm, UserChangeForm
 from django.contrib.auth import update_session_auth_hash
 import asyncio
 from asgiref.sync import sync_to_async
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q, Count
+import json
+from django.core.paginator import Paginator
+from blog.views import PaginationView
+from blog.models import (
+    Blog, Category, Comment, Report, ReportCategory, History, Tag, Bookmark, Like, Para, CoverPhoto, BlogHistory
+)
 
 # Create your views here.
 
-class UserProfileView(LoginRequiredMixin, View):
+
+class UserProfileView(LoginRequiredMixin, PaginationView):
     """A view for displaying User's profile page."""
 
     sucess_url = reverse_lazy('home:all')
+
 
     async def get(self,request):
         """
@@ -43,21 +53,35 @@ class UserProfileView(LoginRequiredMixin, View):
             fav_category: A list of category IDs that user has set to favrioute
         :return: HttpResponse
         """
-
         
-        owner, categories = await asyncio.gather(self.helper_user(), self.helper_cat())
-        if request.user.is_authenticated:
-            rows = await self.helper_fav()
-            fav_category = [row['id'] for row in rows] # creating a list of category IDs that user has set to favrioute
-        ctx = {'owner':owner, 'categories':categories, 'fav_category':fav_category}
-        return render(request, 'user_profile/home.html', ctx)
+        blogs, categories, rows, com_dict, bookmark_dict, follower_dict, like_dict, dislike_dict, view_dict = await asyncio.gather(
+            self.helper_blogs(), self.helper_cat(),self.helper_fav(), self.helper_get_total_comments(),
+            self.helper_get_total_bookmarks(), self.helper_get_total_followers(), self.helper_get_total_likess(), self.helper_get_total_dislikes(),
+            self.helper_get_total_views()
+        )
+
+        paginator = Paginator(blogs, 2)
+        page = request.GET.get("page")
+        page_obj = paginator.get_page(page)
+        page_lis = await self.helper_page_no(page_obj.number, paginator.num_pages)
+        next_page, previous_page = await self.helper_next_page(page_obj)
+
+        owner = request.user
+        fav_category = [row['id'] for row in rows] # creating a list of category IDs that user has set to favrioute
+        ctx = {'owner':owner, 'categories':categories, 'fav_category':fav_category, "com_dict":com_dict,
+               "bookmark_dict":bookmark_dict, "follower_dict":follower_dict, "like_dict":like_dict,
+               "dislike_dict":dislike_dict, "view_dict":view_dict, "final_list":page_obj, "total_pages":page_lis,
+               "next_page":next_page, "previous_page":previous_page
+               }
+
+        return await sync_to_async(render)(request, 'user_profile/home.html', ctx)
     
     @sync_to_async(thread_sensitive=False)
-    def helper_user(self):
+    def helper_blogs(self):
         """A helper method which returns User object using sync_to_async decorator"""
 
-        u = get_object_or_404(User, pk=self.request.user.id)
-        return u
+        u = Blog.objects.filter(owner=self.request.user)
+        return list(u)
     
     @sync_to_async(thread_sensitive=False)
     def helper_cat(self):
@@ -73,7 +97,65 @@ class UserProfileView(LoginRequiredMixin, View):
         u = self.request.user.user_category_like.values('id')
         return list(u)
 
-
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_comments(self):
+        com = list(Comment.graph.count_total(self.request.user))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        com_dict = json.dumps(com_dict)
+        return  com_dict
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_followers(self):
+        com = list(Follow.objects.filter(owner=self.request.user).values('created_at__date').annotate(total=Count('id')).values('created_at__date', 'total').order_by('created_at__date'))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        follow_dict = json.dumps(com_dict)
+        return  follow_dict
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_likess(self):
+        com = list(Like.graph.count_total(self.request.user).filter(like=True))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        like_dict = json.dumps(com_dict)
+        return  like_dict
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_dislikes(self):
+        com = list(Like.graph.count_total(self.request.user).filter(like=False))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        dislike_dict = json.dumps(com_dict)
+        return  dislike_dict
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_bookmarks(self):
+        com = list(Bookmark.graph.count_total(self.request.user))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        bookmark_dict = json.dumps(com_dict)
+        return  bookmark_dict
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_views(self):
+        com = list(BlogHistory.graph.count_total(self.request.user))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        blog_history_dict = json.dumps(com_dict)
+        return  blog_history_dict
 
 
 class ProfilePicUpdateView(LoginRequiredMixin, View):
@@ -361,3 +443,78 @@ def chat_profile_stream_file(request, pk):
     return response
 
 
+class DashboardDetailView(LoginRequiredMixin, View):
+    """A view for displaying User's profile page."""
+
+
+
+    async def get(self,request, pk):
+        """
+        Displays Users's profile page.
+
+        :praram ASGIRequest request: request object
+        :context: 
+            owner: an instance of model class User
+            categories: a list contaning istance of model class Category
+            fav_category: A list of category IDs that user has set to favrioute
+        :return: HttpResponse
+        """
+        blog = await sync_to_async(get_object_or_404)(Blog, pk=pk)
+        com_dict, bookmark_dict, like_dict, view_dict, = await asyncio.gather(
+            self.helper_get_total_comments(blog),self.helper_get_total_bookmarks(blog),
+            self.helper_get_total_likess(blog), self.helper_get_total_views(blog)
+        ) 
+
+        owner = request.user
+        ctx = {'owner':owner, "com_dict":com_dict,"bookmark_dict":bookmark_dict,
+               "like_dict":like_dict, "view_dict":view_dict, "blog_id":blog.id
+               }
+
+        return await sync_to_async(render)(request, 'user_profile/dashboard_detail.html', ctx)
+    
+    
+
+
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_comments(self, blog):
+        com = list(Comment.graph.count_blog_total(blog))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        com_dict = json.dumps(com_dict)
+        return  com_dict
+
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_likess(self, blog):
+        com = list(Like.graph.count_blog_total(blog).filter(like=True))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        like_dict = json.dumps(com_dict)
+        return  like_dict
+    
+
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_bookmarks(self, blog):
+        com = list(Bookmark.graph.count_blog_total(blog))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        bookmark_dict = json.dumps(com_dict)
+        return  bookmark_dict
+    
+    @sync_to_async(thread_sensitive=False)
+    def helper_get_total_views(self, blog):
+        com = list(BlogHistory.graph.count_blog_total(blog))
+        x_axis = [str(i["created_at__date"]) for i in com]
+        y_axis = [i["total"] for i in com]
+        com_dict = {k:v for k,v in zip(x_axis,y_axis)}
+        pint(com_dict, "dict")
+        blog_history_dict = json.dumps(com_dict)
+        return  blog_history_dict
+    

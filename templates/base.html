@@ -109,7 +109,7 @@
 {% endblock %}
 {% block footer %} {% endblock %}
 <script>
-  var notification_websocket = new WebSocket('ws://127.0.0.1:8000/ws/notification/10');
+  var notification_websocket = new WebSocket('ws://' + window.location.host + '/ws/notification/' );
   notification_websocket.onopen = function(){
       console.log("websocket conection open");
   };

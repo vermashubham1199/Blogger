@@ -9,7 +9,39 @@
 {% endblock %}
 {% block content %}
         <h1>Welcome to Blogger</h1> 
-        {% for row in count_list %}
-            {{row.b_name}}
+        {% for blog in final_list %}
+                <div class="card" style="width: 18rem; margin-top: 2mm;">
+                        <img src="{% url 'blog:owner_detail' blog.id %}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                        <h5 class="card-title">{{ blog.b_name  }}</h5>
+                        <p class="card-text"></p>
+                        <a href="{% url 'blog:blog_detail' blog.id %}" class="btn btn-primary">Read</a>
+                        </div>
+                </div>
         {% endfor %}
+
+        <nav aria-label="...">
+                <ul class="pagination">
+                    {% if previous_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/?page={{previous_page}}" tabindex="-1">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for i in total_pages %}
+                    {% if current_page == i %}
+                        <li class="page-item active">
+                            <a class="page-link" href="http://127.0.0.1:8000/?page={{i}}">{{i}} <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="http://127.0.0.1:8000/?page={{i}}">{{i}}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if next_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/?page={{next_page}}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
 {% endblock %}

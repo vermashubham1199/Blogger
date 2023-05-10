@@ -2,22 +2,23 @@ from django.db import models
 
 class CategoryManager(models.Manager):
 
-    def user_recomendation(self):
-        cat = self.get_queryset().raw('''WITH x 
+    def user_recomendation(self ,owner):
+        cat = self.get_queryset().raw(f'''WITH x 
                                           AS(
-                                            SELECT 
-                                                 c.id AS c_id
+                                            SELECT
+                                                1 AS id 
+                                                ,c.id AS c_id
+                                                ,f.id AS f_id
                                                 ,c.name AS c_name
                                                 ,b.name AS b_name
                                                 ,b.id AS b_id
                                                 ,l.id AS l_id
-                                                ,*
-                                                ,COUNT(l.like) OVER(PARTITION BY c.id, b.id) AS like_count
+                                                ,COUNT(l.[like]) OVER(PARTITION BY c.id, b.id) AS like_count
                                           FROM blog_category AS c
                                           JOIN blog_likecat AS f On f.category_id = c.id
                                           JOIN blog_blog AS b ON b.category_id = c.id 
                                           JOIN blog_like As l ON b.id = l.blog_id
-                                          WHERE l.like = True
+                                          WHERE l.[like] = 1 AND f.owner_id = {owner}
                                           ),
                                           y AS
                                           (SELECT 
@@ -34,18 +35,19 @@ class CategoryManager(models.Manager):
     def anonymous_recomendation(self):
         cat = self.get_queryset().raw('''WITH x 
                                           AS(
-                                            SELECT 
-                                                 c.id AS c_id
+                                            SELECT
+                                                1 AS id 
+                                                ,c.id AS c_id
                                                 ,c.name AS c_name
                                                 ,b.name AS b_name
                                                 ,b.id AS b_id
                                                 ,l.id AS l_id
-                                                ,*
-                                                ,COUNT(l.like) OVER(PARTITION BY c.id, b.id) AS like_count
+                                                ,b.name AS b_name
+                                                ,COUNT(l.[like]) OVER(PARTITION BY c.id, b.id) AS like_count
                                           FROM blog_category AS c 
                                           JOIN blog_blog AS b ON b.category_id = c.id 
                                           JOIN blog_like As l ON b.id = l.blog_id
-                                          WHERE l.like = True
+                                          WHERE l.[like] = 1
                                           ),
                                           y AS
                                           (SELECT 

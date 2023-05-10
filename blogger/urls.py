@@ -27,4 +27,5 @@ urlpatterns = [
     path("chat/", include('chat.urls')),
     path("notification/", include('notification.urls')),
     path("api/", include('blog_api.urls')),
+    path("dashboard/", include('dashboard.urls')),
 ]

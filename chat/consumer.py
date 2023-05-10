@@ -15,6 +15,7 @@ class ChatConsumer(AsyncConsumer):
         self.group_name = self.scope['url_route']['kwargs']['g_name']
         pint(self.group_name)
         await self.channel_layer.group_add(self.group_name, self.channel_name)
+        pint(self.channel_layer)
         await self.send({
             "type":"websocket.accept"
         })

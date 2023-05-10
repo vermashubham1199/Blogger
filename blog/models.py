@@ -2,6 +2,7 @@ from email.policy import default
 from django.db import models
 from django.contrib.auth.models import User
 from .managers import CategoryManager
+from user_profile.managers import GraphManager
 
 class Category(models.Model):
     name = models.CharField(max_length=70)
@@ -51,6 +52,11 @@ class History(models.Model):
 class Bookmark(models.Model):
     blog = models.ForeignKey('Blog', on_delete=models.CASCADE, related_name='blog_bookmark')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_bookmark')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    graph = GraphManager()
+    objects = models.Manager()
 
     def __str__(self) -> str:
         return self.owner.username
@@ -62,6 +68,11 @@ class Like(models.Model):
     blog = models.ForeignKey('Blog', on_delete=models.CASCADE, related_name='blog_like')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_like')
     like = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+
+    graph = GraphManager()
+    objects = models.Manager()
 
     def __str__(self) -> str:
         return self.owner.username
@@ -75,6 +86,7 @@ class Report(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=256, null=True, blank=True)
     report_category = models.ForeignKey('ReportCategory', on_delete=models.CASCADE)
+    
 
     def __str__(self) -> str:
         return self.owner.username
@@ -85,6 +97,9 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     text = models.CharField(max_length=256)
+
+    graph = GraphManager()
+    objects = models.Manager()
 
     def __str__(self) -> str:
         return self.owner.username
@@ -123,7 +138,7 @@ class CoverPhoto(models.Model):
     blog = models.OneToOneField(Blog, on_delete=models.CASCADE, related_name='cover_photo_blog')
     picture = models.BinaryField(null = True, blank = True, editable=True)
     content_type = models.CharField(max_length=256, null=True, blank=True, help_text='The MIMEType of the file')
-
+    
     def __str__(self) -> str:
         return str(self.blog)
     
@@ -131,6 +146,10 @@ class CoverPhoto(models.Model):
 class BlogHistory(models.Model):
     blog = models.ForeignKey('Blog', on_delete=models.CASCADE, related_name='blog_history_throu')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_blog_history_throu')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    graph = GraphManager()
+    objects = models.Manager()
 
     def __str__(self) -> str:
         return f"{self.owner.username} {self.blog.name}"

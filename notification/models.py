@@ -17,7 +17,7 @@ class NotificationModel(models.Model):
 class ChannelName(models.Model):
     channel_name =  models.CharField(max_length=256)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="channel_name")
-
+    consumer_name = models.CharField(max_length=256)
 
     def __str__(self) -> str:
         return f"{self.owner}  {self.channel_name}"

@@ -22,6 +22,12 @@
         {% endif %}
         <h1>{{ owner.username }}</h1>
         <ul >
+                <div id="totalComments" style="width:100%;max-width:700px"></div>
+                <div id="totalBookmarks" style="width:100%;max-width:700px"></div>
+                <div id="totalLikes" style="width:100%;max-width:700px"></div>
+                <div id="totalDislikes" style="width:100%;max-width:700px"></div>
+                <div id="totalFollowers" style="width:100%;max-width:700px"></div>
+                <div id="totalViews" style="width:100%;max-width:700px"></div>
                 <h1>Catogaries</h1>
                 {% for category in categories %}
                         <li style="list-style-type: none;"> 
@@ -52,7 +58,112 @@
                 {% endfor %}
         </ul>
 
+        
+        {% for blog in final_list %}
+                <div class="card" style="width: 18rem; margin-top: 2mm;">
+                        <img src="{% url 'blog:owner_detail' blog.id %}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                        <h5 class="card-title">{{ blog.name  }}</h5>
+                        <p class="card-text"></p>
+                        <a href="{% url 'blog:owner_detail' blog.id %}" class="btn btn-primary">{{ blog.name }} Update</a>
+                        <a href="{% url 'user_profile:dashboard_detail' blog.id %}" class="btn btn-primary">{{ blog.name }} see</a>
+                        </div>
+                </div>
+        {% endfor %}
+
+        <nav aria-label="...">
+                <ul class="pagination">
+                    {% if previous_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/user_profile/?page={{previous_page}}" tabindex="-1">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for i in total_pages %}
+                    {% if current_page == i %}
+                        <li class="page-item active">
+                            <a class="page-link" href="http://127.0.0.1:8000/user_profile/?page={{i}}">{{i}} <span class="sr-only">(current)</span></a>
+                        </li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="http://127.0.0.1:8000/user_profile/?page={{i}}">{{i}}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if next_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="http://127.0.0.1:8000/user_profile/?page={{next_page}}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+                
+                
+        
+                
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <script>
+                // Comments
+                var com_dict = '{{ com_dict|escapejs }}';
+                com_dict = JSON.parse(com_dict);
+
+                
+                
+                //Bookmark
+                var bookmark_dict = '{{ bookmark_dict|escapejs }}';
+                bookmark_dict = JSON.parse(bookmark_dict);
+
+
+                
+
+                
+                
+                //Likes
+                var like_dict = '{{ like_dict|escapejs }}';
+                like_dict = JSON.parse(like_dict);
+                
+
+
+
+                //Followers
+                var follower_dict = '{{ follower_dict|escapejs }}';
+                follower_dict = JSON.parse(follower_dict);
+
+
+                //Views
+                var view_dict = '{{ view_dict|escapejs }}';
+                view_dict = JSON.parse(view_dict);
+                
+
+
+                function graph_func(dict_data, graph_name, y_title, tag_name){
+                        var x_array = Object.keys(dict_data);
+                        var y_array = Object.values(dict_data);
+                        var data = [{
+                                x: x_array,
+                                y: y_array,
+                                mode:"lines"
+                        }];
+                        var layout = {
+                                xaxis: {range: [x_array[0], x_array[x_array.length - 1]], title: "Date"},
+                                yaxis: {range: [Math.min.apply(null, y_array)-1, Math.max.apply(null, y_array)+1], title: y_title},  
+                                title: graph_name
+                        };
+                        Plotly.newPlot(tag_name, data, layout);
+                };
+
+               
+                graph_func(com_dict, "Total Comments", "Comments", "totalComments")
+                graph_func(bookmark_dict, "Total Bookmarks", "Bookamrks", "totalBookmarks")
+                graph_func(like_dict, "Total Likes", "Likes", "totalLikes")
+                graph_func(follower_dict, "Total Followers", "Followers", "totalFollowers")
+                graph_func(view_dict, "Total Views", "Views", "totalViews")
+
+
+
+                
+
+
+                
+
                 function favPost(url, thing_id) {
                     console.log('Requesting JSON');
                     console.log(url, thing_id);
@@ -63,6 +174,95 @@
                     }).fail(function(xhr) {
                         alert('Url failed with '+xhr.status+' '+url);
                     });
+                }
+                function like_data(dict_data, graph_name, y_title, tag_name, msg){
+                        d = dict_data[msg.created_date]
+                        console.log(typeof d)
+                        if(d != undefined){
+                                console.log(msg.like_value, "1")
+                                if(msg.like_value){
+                                        if(msg.dele){
+                                                console.log("if check", "2")
+                                                console.log(dict_data[msg.created_date])
+                                                dict_data[msg.created_date] -= 1
+                                                console.log(dict_data[msg.created_date])
+                                                graph_func(dict_data, graph_name, y_title, tag_name);
+                                        }
+                                        else{
+                                                console.log("if check","3")
+                                                console.log(dict_data[msg.created_date])
+                                                dict_data[msg.created_date] += 1
+                                                console.log(dict_data[msg.created_date])
+                                                graph_func(dict_data, graph_name, y_title, tag_name);
+                                        }
+                                }
+                                else{
+                                        console.log("if check","4")
+                                        console.log(dict_data[msg.created_date])
+                                        dict_data[msg.created_date] -= 1
+                                        console.log(dict_data[msg.created_date])
+                                        graph_func(dict_data, graph_name, y_title, tag_name);
+                                };
+                                
+                        }
+                        else{console.log("else check","5")
+                                console.log(dict_data[msg.created_date])
+                                dict_data[msg.created_date] = 1
+                                console.log(dict_data[msg.created_date])
+                                graph_func(dict_data, graph_name, y_title, tag_name);
+                        };
+                };
+
+
+                function live_data(dict_data, graph_name, y_title, tag_name, msg){
+                        d = dict_data[msg.created_date]
+                        console.log(typeof d)
+                        if(d != undefined){
+                                if(msg.dele){
+                                console.log("if check", "2")
+                                console.log(dict_data[msg.created_date])
+                                dict_data[msg.created_date] -= 1
+                                console.log(dict_data[msg.created_date])
+                                graph_func(dict_data, graph_name, y_title, tag_name);
+                                }
+                                else{
+                                        console.log("if check","3")
+                                        console.log(dict_data[msg.created_date])
+                                        dict_data[msg.created_date] += 1
+                                        console.log(dict_data[msg.created_date])
+                                        graph_func(dict_data, graph_name, y_title, tag_name);
+                                }
+                        }
+                        else{console.log("else check","5")
+                                console.log(dict_data[msg.created_date])
+                                dict_data[msg.created_date] = 1
+                                console.log(dict_data[msg.created_date])
+                                graph_func(dict_data, graph_name, y_title, tag_name);
+                        }; 
+                };      
+                var dashboard_websocket = new WebSocket('ws://' + window.location.host + '/ws/dashboard/');
+                dashboard_websocket.onopen = function(){
+                console.log("dashboard websocket conection open");
+                };
+                dashboard_websocket.onmessage = function (event){
+                        console.log(event)
+                        console.log(com_dict)
+                        msg = JSON.parse(event.data)
+                        if(msg.table_name == "Commnet"){
+                                console.log("table name check")
+                                live_data(com_dict, "Total Comments", "Comments", "totalComments", msg)
+                        }
+                        else if(msg.table_name == "Like"){
+                                console.log("table name check")
+                                like_data(like_dict, "Total Likes", "Likes", "totalLikes", msg)}
+                                
+                        else if(msg.table_name == "Bookmark"){
+                                console.log("table name check")
+                                live_data(bookmark_dict, "Total Bookmarks", "Bookmarks", "totalBookmarks", msg)}
+                        
+                        else if(msg.table_name == "BlogHistory"){
+                                console.log("table name check")
+                                live_data(view_dict, "Total Views", "Views", "totalViews", msg)};
                 }
                 </script>
 {% endblock %}

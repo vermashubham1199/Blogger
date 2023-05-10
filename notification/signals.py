@@ -24,13 +24,16 @@ def follow_notification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=NotificationModel)
 def follow_notification_broadcasting(sender, instance, created, **kwargs):
+    channel_name = (list(instance.receiver.channel_name.filter(consumer_name="FollowNotificationConsumer")))
+    channel_list = [c.channel_name for c in channel_name]
+    pint(type(channel_name), channel_list, "channel list ****************************************")
     if instance.table_name == "Follow":
         pint("post save NotificationModel working")
         pint("notification signal")
-        pint(instance.receiver.channel_name.all().first().channel_name)
-        notification_task.delay(pk=instance.id)
+        notification_task.delay(pk=instance.id, channel_list=channel_list)
     elif instance.table_name == "Blog":
-        notification_blog_task.delay(pk=instance.id)
+        sender = instance.sender.username
+        notification_blog_task.delay(pk=instance.id, group_name=sender)
 
 
 

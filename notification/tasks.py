@@ -17,32 +17,29 @@ from blog.models import Blog
 
 
 @shared_task(bind=True)
-def notification_task(self, pk):
-    notification_row = get_object_or_404(NotificationModel, pk=pk)
-    channel_name = notification_row.receiver.channel_name.all().first().channel_name
+def notification_task(self, pk, channel_list):
     channel_layer = get_channel_layer()
+    pint(channel_layer, "channel_layer in notification")
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(
-        channel_layer.send(
-        channel_name,
-        {
-        "type":"notification.send",
-        "notification_message":json.dumps({
-        "notification_id":pk
-        }) 
-        }
+    for  channel_name in channel_list:
+        pint(channel_name)
+        loop.run_until_complete(
+            channel_layer.send(
+            channel_name,
+            {
+            "type":"notification.send",
+            "notification_message":json.dumps({
+            "notification_id":pk
+            }) 
+            }
+            )
         )
-    )
 
 @shared_task(bind=True)
-def notification_blog_task(self, pk):
-    notification_row = get_object_or_404(NotificationModel, pk=pk)
-    group_name = notification_row.sender.username
-    pint(group_name)
+def notification_blog_task(self, pk, group_name):
+    pint(group_name, "group_name in notification tasks.py line 41")
     channel_layer = get_channel_layer()
-    # group_list = channel_layer.group_channels(str(group_name))
-    # pint(group_list, "group list")
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(
