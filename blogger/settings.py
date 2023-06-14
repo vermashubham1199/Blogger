@@ -109,7 +109,7 @@ DATABASES = {
         "ENGINE": "mssql",
         "NAME": "blogger",
         "USER": "sa",
-        "PASSWORD": "Innotanuj1999",
+        "PASSWORD": "password",
         "HOST": "DESKTOP-9URA4JC\SHUBHAM",
         "PORT": "",
         "OPTIONS": {"driver": "ODBC Driver 17 for SQL Server", 
